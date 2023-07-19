@@ -1,0 +1,10 @@
+[package]
+name = "rsdl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pest = "2.7.1"
+pest_derive = "2.7.1"
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"

@@ -1,0 +1,8 @@
+alias CXXType = native(rust => RustType, cxx => CXXType)
+
+def Type = IntType
+         | FloatType
+         | RustType(name: str)
+
+def Type2 = Type
+          | CXXType

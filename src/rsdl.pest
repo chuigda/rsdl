@@ -1,0 +1,44 @@
+WHITESPACE = _{ (" " | "\t" | NEWLINE) }
+
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
+scoped_identifier = { (identifier ~ ".")* ~ identifier }
+
+mapping = { identifier ~ "=>" ~ scoped_identifier }
+
+mapping_seq = {
+  (mapping ~ ",")* ~ mapping
+}
+
+list_type = { "[" ~ rsdl_type ~ "]" }
+record_type = { "{" ~ "str" ~ "=>" ~ rsdl_type ~ "}" }
+native_type = { "native(" ~ mapping_seq ~ ")" }
+
+rsdl_type = {
+  "int" |
+  "float" |
+  "str" |
+  "bool" |
+  native_type |
+  identifier |
+  list_type |
+  record_type
+}
+
+field = { identifier ~ ":" ~ rsdl_type }
+
+field_list = { (field ~ ",")* ~ field }
+
+type_ctor = { identifier ~ "(" ~ field_list ~ ")" }
+
+sum_type_variant = { type_ctor | identifier }
+
+variant_list = { (sum_type_variant ~ "|")* ~ sum_type_variant }
+
+sum_type = { identifier ~ "=" ~ variant_list }
+
+type_alias = { "alias" ~ identifier ~ "=" ~ rsdl_type }
+
+type_decl = { "def" ~ type_ctor | "def" ~ sum_type | type_alias }
+
+rsdl_program = { SOI ~ type_decl* ~ EOI }

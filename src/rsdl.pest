@@ -47,7 +47,7 @@ attr_item = { comp_attr | assign_attr | identifier }
 
 attr_item_list = { (attr_item ~ ",")* ~ attr_item }
 
-attr = { "[" ~ attr_item_list ~ "]" }
+attr = { "[" ~ attr_item ~ "]" }
 
 type_decl = { attr* ~ (type_ctor | sum_type | type_alias) }
 

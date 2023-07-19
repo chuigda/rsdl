@@ -37,5 +37,5 @@ fn main() {
         }
     };
 
-    println!("{rsdl}");
+    println!("{:#?}", rsdl);
 }

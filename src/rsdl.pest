@@ -4,7 +4,9 @@ identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
 scoped_identifier = { (identifier ~ ".")* ~ identifier }
 
-mapping = { identifier ~ "=>" ~ scoped_identifier }
+string = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+
+mapping = { identifier ~ "=>" ~ (scoped_identifier | string) }
 
 mapping_seq = {
   (mapping ~ ",")* ~ mapping
@@ -25,7 +27,7 @@ rsdl_type = {
   record_type
 }
 
-field = { identifier ~ ":" ~ rsdl_type }
+field = { attr* ~ identifier ~ ":" ~ rsdl_type }
 
 field_list = { (field ~ ",")* ~ field }
 
@@ -41,9 +43,9 @@ type_alias = { identifier ~ "=" ~ rsdl_type }
 
 comp_attr = { identifier ~ "(" ~ attr_item_list ~ ")" }
 
-assign_attr = { identifier ~ "=" ~ attr_item }
+assign_attr = { identifier ~ "=" ~ (identifier | scoped_identifier | string) }
 
-attr_item = { comp_attr | assign_attr | identifier }
+attr_item = { comp_attr | assign_attr | identifier | string }
 
 attr_item_list = { (attr_item ~ ",")* ~ attr_item }
 

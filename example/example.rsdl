@@ -3,8 +3,9 @@ CXXType = native(rust => RustType, cxx => CXXType)
 
 [rust_derive(Debug, Clone)]
 [rust_codegen_preference(str = owned_std_string, int = i64)]
-Type : int
-     | float
+[doc("一个类型")]
+Type : IntType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
+     | FloatType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
      | RustType(name: str)
 
 [rust_derive(Debug, Clone)]

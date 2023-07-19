@@ -35,10 +35,10 @@ sum_type_variant = { type_ctor | identifier }
 
 variant_list = { (sum_type_variant ~ "|")* ~ sum_type_variant }
 
-sum_type = { identifier ~ "=" ~ variant_list }
+sum_type = { identifier ~ ":" ~ variant_list }
 
-type_alias = { "alias" ~ identifier ~ "=" ~ rsdl_type }
+type_alias = { identifier ~ "=" ~ rsdl_type }
 
-type_decl = { "def" ~ type_ctor | "def" ~ sum_type | type_alias }
+type_decl = { type_ctor | sum_type | type_alias }
 
 rsdl_program = { SOI ~ type_decl* ~ EOI }

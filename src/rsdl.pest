@@ -33,7 +33,7 @@ field_list = { (field ~ ",")* ~ field }
 
 type_ctor = { identifier ~ "(" ~ field_list ~ ")" }
 
-sum_type_variant = { type_ctor | identifier }
+sum_type_variant = { attr* ~ (type_ctor | identifier) }
 
 variant_list = { (sum_type_variant ~ "|")* ~ sum_type_variant }
 

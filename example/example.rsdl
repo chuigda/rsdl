@@ -1,3 +1,4 @@
+[allow_jarvis]
 CXXType = native(rust => RustType, cxx => CXXType)
 
 [rust_derive(Debug, Clone)]

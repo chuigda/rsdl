@@ -39,6 +39,16 @@ sum_type = { identifier ~ ":" ~ variant_list }
 
 type_alias = { identifier ~ "=" ~ rsdl_type }
 
-type_decl = { type_ctor | sum_type | type_alias }
+comp_attr = { identifier ~ "(" ~ attr_item_list ~ ")" }
+
+assign_attr = { identifier ~ "=" ~ attr_item }
+
+attr_item = { comp_attr | assign_attr | identifier }
+
+attr_item_list = { (attr_item ~ ",")* ~ attr_item }
+
+attr = { "[" ~ attr_item_list ~ "]" }
+
+type_decl = { attr* ~ (type_ctor | sum_type | type_alias) }
 
 rsdl_program = { SOI ~ type_decl* ~ EOI }

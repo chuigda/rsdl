@@ -1,8 +1,11 @@
 CXXType = native(rust => RustType, cxx => CXXType)
 
-Type : IntType
-     | FloatType
+[rust_derive(Debug, Clone)]
+[rust_codegen_preference(str = owned_std_string, int = i64)]
+Type : int
+     | float
      | RustType(name: str)
 
+[rust_derive(Debug, Clone)]
 Type2 : Type
       | CXXType

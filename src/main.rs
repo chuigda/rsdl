@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 
 use pest::Parser;
 use tracing::{error, info, warn};
+use crate::min_resolv::ResolveContext;
 
 use crate::parser::pest_parser::{PestRSDLParser, Rule};
 use crate::parser::treeconv::treeconv;
@@ -30,7 +31,7 @@ fn main() {
     let mut preprocessed_files = HashSet::new();
     let mut preprocess_queue: VecDeque<PathBuf> = VecDeque::new();
     let mut parse_stack: Vec<(PathBuf, String)> = Vec::new();
-    let mut typedef = Vec::new();
+    let mut tydes = Vec::new();
 
     let path = Path::new(&args[1]).canonicalize().unwrap();
     let workdir = path.parent().unwrap().canonicalize().unwrap();
@@ -81,8 +82,20 @@ fn main() {
             }
         };
 
-        treeconv(&display_name, rsdl, &mut typedef);
+        treeconv(&display_name, rsdl, &mut tydes);
     }
 
-    dbg!(typedef);
+    let mut resolve_ctx = ResolveContext::new();
+
+    for tyde in tydes.iter() {
+        if resolve_ctx.min_resolv(tyde).is_err() {
+            return;
+        }
+    }
+
+    for tyde in tydes.iter() {
+        if resolve_ctx.min_resolv_chk(tyde).is_err() {
+            return;
+        }
+    }
 }

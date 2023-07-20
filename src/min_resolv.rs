@@ -92,26 +92,39 @@ impl ResolveContext {
         Ok(())
     }
 
-    pub fn min_resolv_check(&mut self, tyde: &TypeDef) -> Result<(), ()> {
+    pub fn min_resolv_chk(&self, tyde: &TypeDef) -> Result<(), ()> {
         match &tyde.inner {
-            TypeDefInner::AliasType(name, ty) => if let RSDLType::Identifier(ident) = ty {
-                if self.known_types.get(ident).is_none() {
-                    error!(
-                        "{}: 类型别名 {} 引用了未知的类型 {}",
-                        tyde.file,
-                        name,
-                        ident
-                    );
-                    return Err(());
-                }
+            TypeDefInner::AliasType(name, ty) => if let Err(ident) = self.chktype(ty) {
+                error!(
+                    "{}: 类型别名 {} 引用了未知的类型 {}",
+                    tyde.file,
+                    name,
+                    ident
+                );
+                return Err(());
             },
             TypeDefInner::SimpleType(ctor) => {
                 for (_, _, ty, name) in &ctor.fields {
-                    if let RSDLType::Identifier(ident) = ty {
-                        if self.known_types.get(ident).is_none() {
+                    if let Err(ident) = self.chktype(ty) {
+                        error!(
+                            "{}: 类型 {} 的字段 {} 引用了未知的类型 {}",
+                            tyde.file,
+                            ctor.name,
+                            name,
+                            ident
+                        );
+                        return Err(());
+                    }
+                }
+            },
+            TypeDefInner::SumType(sum_type) => {
+                for (_, ctor) in &sum_type.ctors {
+                    for (_, _, ty, name) in &ctor.fields {
+                        if let Err(ident) = self.chktype(ty) {
                             error!(
-                                "{}: 类型 {} 的字段 {} 引用了未知的类型 {}",
+                                "{}: 类型 {} 的构造器 {} 的字段 {} 引用了未知的类型 {}",
                                 tyde.file,
+                                sum_type.name,
                                 ctor.name,
                                 name,
                                 ident
@@ -120,26 +133,22 @@ impl ResolveContext {
                         }
                     }
                 }
-            },
-            TypeDefInner::SumType(sum_type) => {
-                for (_, ctor) in &sum_type.ctors {
-                    for (_, _, ty, name) in &ctor.fields {
-                        if let RSDLType::Identifier(ident) = ty {
-                            if self.known_types.get(ident).is_none() {
-                                error!(
-                                    "{}: 类型 {} 的构造器 {} 的字段 {} 引用了未知的类型 {}",
-                                    tyde.file,
-                                    sum_type.name,
-                                    ctor.name,
-                                    name,
-                                    ident
-                                );
-                                return Err(());
-                            }
-                        }
-                    }
-                }
             }
+        }
+
+        Ok(())
+    }
+
+    fn chktype<'a>(&self, ty: &'a RSDLType) -> Result<(), &'a str> {
+        match ty {
+            RSDLType::Identifier(ident) => {
+                if self.known_types.get(ident.as_str()).is_none() {
+                    return Err(ident.as_str());
+                }
+            },
+            RSDLType::List(inner) => return self.chktype(inner),
+            RSDLType::Record(inner) => return self.chktype(inner),
+            _ => {}
         }
 
         Ok(())

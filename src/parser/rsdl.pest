@@ -20,10 +20,6 @@ record_type = { "record" ~ "<" ~ "str" ~ "," ~ rsdl_type ~ ">" }
 native_type = { "native(" ~ mapping_seq ~ ")" }
 
 rsdl_type = {
-  "int" |
-  "float" |
-  "str" |
-  "bool" |
   native_type |
   list_type |
   record_type |

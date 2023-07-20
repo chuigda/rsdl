@@ -37,8 +37,8 @@ pub struct SumType {
 #[derive(Debug, Clone)]
 pub enum TypeDefInner {
     AliasType(String, RSDLType),
-    SumType(SumType),
-    SimpleType(TypeConstructor)
+    SimpleType(TypeConstructor),
+    SumType(SumType)
 }
 
 #[derive(Debug, Clone)]

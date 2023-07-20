@@ -27,24 +27,24 @@ fn main() {
         return;
     }
 
-    let mut resolved_files = HashSet::new();
-    let mut queue: VecDeque<PathBuf> = VecDeque::new();
+    let mut preprocessed_files = HashSet::new();
+    let mut preprocess_queue: VecDeque<PathBuf> = VecDeque::new();
+    let mut parse_stack: Vec<(PathBuf, String)> = Vec::new();
     let mut typedef = Vec::new();
 
     let path = Path::new(&args[1]).canonicalize().unwrap();
     let workdir = path.parent().unwrap().canonicalize().unwrap();
 
-    queue.push_back(path);
+    preprocess_queue.push_back(path);
 
-    while !queue.is_empty() {
-        let path = queue.pop_front().unwrap();
+    while !preprocess_queue.is_empty() {
+        let path = preprocess_queue.pop_front().unwrap();
         let display_name = format!("{}", path.display());
-
         #[cfg(windows)] let display_name = display_name.replace("\\\\?\\", "");
 
-        info!("正在处理 {display_name}");
+        info!("预处理 {display_name}");
 
-        if resolved_files.contains(&path) {
+        if preprocessed_files.contains(&path) {
             warn!("文件 {} 已经被处理过，跳过", path.display());
             continue;
         }
@@ -55,7 +55,25 @@ fn main() {
         };
 
         let preprocessed = preprocess(&display_name, &file_content);
-        let rsdl = match PestRSDLParser::parse(Rule::rsdl_program, &preprocessed.output_src) {
+        parse_stack.push((path.clone(), preprocessed.output_src));
+        preprocessed_files.insert(path.clone());
+
+        for include in preprocessed.includes.into_iter().rev() {
+            let Ok(include_path) = workdir.join(&include).canonicalize() else {
+                error!("无法解析引用的文件 {include}");
+                return;
+            };
+            preprocess_queue.push_back(include_path);
+        }
+    }
+
+    for (path, src) in parse_stack.into_iter().rev() {
+        let display_name = format!("{}", path.display());
+        #[cfg(windows)] let display_name = display_name.replace("\\\\?\\", "");
+
+        info!("解析 {display_name}");
+
+        let rsdl = match PestRSDLParser::parse(Rule::rsdl_program, &src) {
             Ok(rsdl) => rsdl,
             Err(e) => {
                 error!("解析 RSDL 文件 {display_name} 失败:\n{e}");
@@ -64,15 +82,6 @@ fn main() {
         };
 
         treeconv(&display_name, rsdl, &mut typedef);
-        resolved_files.insert(path);
-
-        for include in preprocessed.includes {
-            let Ok(include_path) = workdir.join(&include).canonicalize() else {
-                error!("无法解析引用的文件 {include}");
-                return;
-            };
-            queue.push_back(include_path);
-        }
     }
 
     dbg!(typedef);

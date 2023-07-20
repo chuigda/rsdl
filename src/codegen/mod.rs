@@ -1,4 +1,6 @@
+use std::collections::HashSet;
 use std::error::Error;
+use std::ops::Deref;
 use tracing::error;
 
 use crate::min_resolv::ResolveContext;
@@ -6,11 +8,8 @@ use crate::parser::hir::{AttrItem, RSDLType, SumType, TypeConstructor, TypeDef, 
 
 pub trait CodeGenerator {
     fn generator_name(&self) -> &'static str;
-    fn lang_name(&self) -> &'static str;
     fn lang_ident(&self) -> &'static str;
-    fn extension_name(&self) -> &'static str;
-    fn reserved_idents(&self) -> &'static [&'static str];
-    fn supported_attr(&self) -> &'static [&'static str];
+    fn reserved_idents(&self) -> &[&'static str];
 
     fn visit_namespace_begin(
         &mut self,
@@ -73,6 +72,21 @@ pub fn codegen(
     ctx: &ResolveContext,
     codegen: &mut dyn CodeGenerator
 ) -> Result<Vec<String>, Box<dyn Error>> {
+    let reserved_idents = codegen.reserved_idents()
+        .into_iter()
+        .map(Deref::deref)
+        .collect::<HashSet<_>>();
+    for (ty_name, (exist_in_file, _)) in ctx.known_types.iter() {
+        if reserved_idents.contains(ty_name.as_str()) {
+            return Err(format!(
+                "{}: 生成器报告文件 {} 中的类型名 {} 与保留标识符冲突",
+                codegen.generator_name(),
+                exist_in_file,
+                ty_name
+            ).into());
+        }
+    }
+
     let mut output = Vec::new();
 
     if let Some(namespace) = namespace {

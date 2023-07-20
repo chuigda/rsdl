@@ -2,7 +2,7 @@ WHITESPACE = _{ (" " | "\t" | NEWLINE) }
 
 identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
-raw_string = { ("\\\"" | "\\t" | "\\n" | "\\r" | (!"\"" ~ ANY))* }
+raw_string = @{ ("\\\"" | "\\t" | "\\n" | "\\r" | (!"\"" ~ ANY))* }
 
 string = { "\"" ~ raw_string ~ "\"" }
 

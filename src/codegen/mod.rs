@@ -1,3 +1,5 @@
+pub mod rustgen;
+
 use std::collections::HashSet;
 use std::error::Error;
 use std::ops::Deref;
@@ -61,6 +63,7 @@ pub trait CodeGenerator {
     fn visit_sum_type(
         &mut self,
         ctx: &ResolveContext,
+        attr: &[AttrItem],
         sum_type: &SumType,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>>;
@@ -131,7 +134,7 @@ pub fn codegen(
                     })?
             },
             TypeDefInner::SumType(sum_type) => {
-                codegen.visit_sum_type(ctx, &sum_type, &mut output)
+                codegen.visit_sum_type(ctx, &d.attr, &sum_type, &mut output)
                     .map_err(|err| {
                         error!(
                             "{}: 生成文件 {} 中的和类型 {} 时遇到错误: {}",

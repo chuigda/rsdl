@@ -1,5 +1,4 @@
 #!/usr/bin/env rsdl
-#include "stdlib.rsdl"
 
 DType = list<int>
 

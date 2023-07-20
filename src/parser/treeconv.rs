@@ -204,22 +204,14 @@ fn fldconv(fld: Pair<Rule>) -> (SmallVec<[AttrItem; 2]>, bool, RSDLType, String)
 
 fn convrsdltype(rsdl_type: Pair<Rule>) -> RSDLType {
     let mut cloned_iter = rsdl_type.clone().into_inner();
-    if let Some(inner) = cloned_iter.next() {
-        match inner.as_rule() {
-            Rule::identifier => RSDLType::Identifier(rsdl_type.as_str().to_string()),
-            Rule::list_type => convrsdltype_list(inner),
-            Rule::record_type => convrsdltype_record(inner),
-            Rule::native_type => convrsdltype_native(inner),
-            _ => unreachable!()
-        }
-    } else {
-        match rsdl_type.as_str()  {
-            "int" => RSDLType::Int,
-            "float" => RSDLType::Float,
-            "str" => RSDLType::Str,
-            "bool" => RSDLType::Bool,
-            _ => unreachable!()
-        }
+    let inner = cloned_iter.next().unwrap();
+    
+    match inner.as_rule() {
+        Rule::identifier => RSDLType::Identifier(rsdl_type.as_str().to_string()),
+        Rule::list_type => convrsdltype_list(inner),
+        Rule::record_type => convrsdltype_record(inner),
+        Rule::native_type => convrsdltype_native(inner),
+        _ => unreachable!()
     }
 }
 

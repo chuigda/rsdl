@@ -24,7 +24,7 @@ pub enum RSDLType {
 #[derive(Debug, Clone)]
 pub struct TypeConstructor {
     pub name: String,
-    pub fields: Vec<(SmallVec<[AttrItem; 2]>, RSDLType, String)>
+    pub fields: Vec<(SmallVec<[AttrItem; 2]>, bool, RSDLType, String)>
 }
 
 #[derive(Debug, Clone)]

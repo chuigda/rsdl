@@ -1,6 +1,7 @@
 mod min_resolv;
 mod parser;
 mod preprocess;
+mod codegen;
 
 use std::collections::{HashSet, VecDeque};
 use std::env;
@@ -10,7 +11,7 @@ use pest::Parser;
 use tracing::{error, info, warn};
 
 use crate::parser::pest_parser::{PestRSDLParser, Rule};
-use crate::parser::treeconv;
+use crate::parser::treeconv::treeconv;
 use crate::preprocess::preprocess;
 
 fn main() {

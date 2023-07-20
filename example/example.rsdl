@@ -5,7 +5,7 @@ DType = list<int>
 
 [allow_jarvis = minion]
 [delete_charlies(defn)]
-CXXType = native(rust => "RustType", cxx => "CXXType")
+CXXType = native(rust => "Rust\"Type", cxx => "CXXType")
 
 [rust_derive(Debug, Clone)]
 [rust_codegen_preference(str = owned_std_string, int = i64)]

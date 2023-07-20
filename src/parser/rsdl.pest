@@ -2,13 +2,13 @@ WHITESPACE = _{ (" " | "\t" | NEWLINE) }
 
 identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
-string = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+raw_string = { ("\\\"" | "\\t" | "\\n" | "\\r" | (!"\"" ~ ANY))* }
+
+string = { "\"" ~ raw_string ~ "\"" }
 
 mapping = { identifier ~ "=>" ~ string }
 
-mapping_seq = {
-  (mapping ~ ",")* ~ mapping
-}
+mapping_seq = { (mapping ~ ",")* ~ mapping }
 
 list_type = { (
   "[" ~ rsdl_type ~ "]" |
@@ -30,7 +30,9 @@ rsdl_type = {
   identifier
 }
 
-field = { attr* ~ identifier ~ ":" ~ rsdl_type }
+optional_mark = { "?"? }
+
+field = { attr* ~ identifier ~ optional_mark ~ ":" ~ rsdl_type }
 
 field_list = { (field ~ ",")* ~ field }
 

@@ -30,6 +30,17 @@ pub fn preprocess(file_name: &str, src: &str) -> PreprocessResult {
         else if trimmed.starts_with("#") {
             warn!("{file_name}:{lineno}: 无效的预处理指令: {line}");
         }
+        else if trimmed.starts_with("include ") {
+            // be compatible with previous version
+            let included_module = trimmed[8..].trim();
+            let module_path = included_module.split(".");
+
+            #[cfg(windows)] let mut module_path = module_path.collect::<Vec<&str>>().join("\\");
+            #[cfg(not(windows))] let mut module_path = module_path.collect::<Vec<&str>>().join("/");
+
+            module_path.push_str(".asdl");
+            includes.push(module_path);
+        }
         else {
             let splitted = line.split("--");
             let mut iter = splitted.into_iter();

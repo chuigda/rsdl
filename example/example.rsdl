@@ -4,7 +4,7 @@ DType = list<int>
 
 [allow_jarvis = minion]
 [delete_charlies(defn)]
-CXXType = native(rust => "Rust\"Type", cxx => "CXXType")
+NatType = native(rust => "RustType", cxx => "CXXType")
 
 [rust_derive(Debug, Clone)]
 [rust_codegen_preference(str = owned_std_string, int = i64)]
@@ -12,13 +12,15 @@ CXXType = native(rust => "Rust\"Type", cxx => "CXXType")
 Type :
      [doc("第一个变体?")]
      [doc("bzdn")]
+     [doc_ctor("这个文档注释会被加在 IntType 类型上，而不是 Type 的变体上")]
+     [rust_derive(Debug, Clone)]
      IntType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
-     | FloatType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
-     | RustType(name: str)
+     | [rust_derive(Debug, Clone)] FloatType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
+     | [rust_derive(Debug, Clone)] RustType(name: str)
 
 [rust_derive(Debug, Clone)]
 Type2 : Type
-      | CXXType
+      | NatType
 
 [rust_unsafe_impl(Send, Sync)]
 FFTWPtr = native(rust => "*const FFTW", cxx => "struct FFTW*")

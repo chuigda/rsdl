@@ -114,21 +114,20 @@ impl RustGenerator {
         match attr {
             AttrItem::Identifier(ident) => Ok(format!("#[{}]", ident)),
             AttrItem::CallAlike(fn_alike, param_alike) => {
-                let mut param_str = String::new();
-                for param in param_alike {
-                    param_str.push_str(&self.gen_single_rust_attr(param)?);
-                }
+                let param_str = param_alike
+                    .iter()
+                    .map(|param| self.gen_single_rust_attr(param))
+                    .collect::<Result<Vec<_>, _>>()?
+                    .join(", ");
 
                 Ok(format!("#[{}({})]", fn_alike, param_str))
             },
             AttrItem::Assignment(assignee, value) => {
-                let value_str = match value.as_ref() {
-                    AttrItem::String(s) => format!("\"{}\"", s),
-                    AttrItem::Identifier(ident) => ident.to_string(),
-                    _ => return Err("属性赋值的值必须是字符串字面量或标识符".into())
-                };
-
-                Ok(format!("#[{} = {}]", assignee, value_str))
+                match value.as_ref() {
+                    AttrItem::String(s) => Ok(format!("#[{} = \"{}\"]", assignee, s)),
+                    AttrItem::Identifier(ident) => Ok(format!("#[{} = {}]", assignee, ident)),
+                    _ => Err("属性赋值的值必须是字符串字面量或标识符".into())
+                }
             },
             _ => Err("属性必须是标识符、函数调用或赋值".into())
         }

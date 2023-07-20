@@ -43,6 +43,7 @@ pub enum TypeDefInner {
 
 #[derive(Debug, Clone)]
 pub struct TypeDef {
+    pub file: String,
     pub attr: SmallVec<[AttrItem; 2]>,
     pub inner: TypeDefInner
 }

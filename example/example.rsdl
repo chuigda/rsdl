@@ -1,3 +1,5 @@
+#include "exist.rsdl"
+
 DType = [int]
 [allow_jarvis = minion]
 [delete_charlies(defn)]

@@ -16,9 +16,7 @@ use crate::parser::hir::{
 };
 use crate::parser::pest_parser::Rule;
 
-pub fn treeconv(mut tree: Pairs<Rule>) -> Vec<TypeDef> {
-    let mut ret = Vec::new();
-
+pub fn treeconv(file_name: &str, mut tree: Pairs<Rule>, output: &mut Vec<TypeDef>) {
     let rsdl_program = tree
         .next()
         .unwrap();
@@ -27,26 +25,25 @@ pub fn treeconv(mut tree: Pairs<Rule>) -> Vec<TypeDef> {
 
     for rsdl_item in rsdl_program.into_inner() {
         match rsdl_item.as_rule() {
-            Rule::type_def => ret.push(tydeconv(rsdl_item)),
+            Rule::type_def => output.push(tydeconv(file_name, rsdl_item)),
             Rule::EOI => {},
             _ => unreachable!()
         }
     }
-
-    ret
 }
 
-fn tydeconv(ty: Pair<Rule>) -> TypeDef {
+fn tydeconv(file_name: &str, ty: Pair<Rule>) -> TypeDef {
     let mut attr: SmallVec<[AttrItem; 2]> = SmallVec::new();
 
     for tyde_item in ty.into_inner() {
         match tyde_item.as_rule() {
             Rule::attr => { attr.push(attrconv(tyde_item)); },
-            Rule::type_alias => { return convtypealias(attr, tyde_item); },
-            Rule::sum_type => { return convsumtype(attr, tyde_item); }
+            Rule::type_alias => { return convtypealias(file_name, attr, tyde_item); },
+            Rule::sum_type => { return convsumtype(file_name, attr, tyde_item); }
             Rule::type_ctor => {
                 let ctor = ctorconv(tyde_item);
                 return TypeDef {
+                    file: file_name.to_string(),
                     attr,
                     inner: TypeDefInner::SimpleType(ctor)
                 }
@@ -102,18 +99,27 @@ fn imp_attrconv(inner: Pair<Rule>) -> AttrItem {
     }
 }
 
-fn convtypealias(attr: SmallVec<[AttrItem; 2]>, alias: Pair<Rule>) -> TypeDef {
+fn convtypealias(
+    file_name: &str,
+    attr: SmallVec<[AttrItem; 2]>,
+    alias: Pair<Rule>
+) -> TypeDef {
     let mut iter = alias.into_inner();
     let identifier = identchkconv(iter.next().unwrap());
     let rsdl_type = convrsdltype(iter.next().unwrap());
 
     TypeDef {
+        file: file_name.to_string(),
         attr,
         inner: TypeDefInner::AliasType(identifier, rsdl_type)
     }
 }
 
-fn convsumtype(attr: SmallVec<[AttrItem; 2]>, sumtype: Pair<Rule>) -> TypeDef {
+fn convsumtype(
+    file_name: &str,
+    attr: SmallVec<[AttrItem; 2]>,
+    sumtype: Pair<Rule>
+) -> TypeDef {
     let mut iter = sumtype.into_inner();
     let name = identchkconv(iter.next().unwrap());
 
@@ -127,6 +133,7 @@ fn convsumtype(attr: SmallVec<[AttrItem; 2]>, sumtype: Pair<Rule>) -> TypeDef {
     }
 
     TypeDef {
+        file: file_name.to_string(),
         attr,
         inner: TypeDefInner::SumType(SumType {
             name,

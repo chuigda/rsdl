@@ -11,10 +11,6 @@ pub enum AttrItem {
 
 #[derive(Debug, Clone)]
 pub enum RSDLType {
-    Int,
-    Float,
-    Str,
-    Bool,
     Identifier(String),
     Native(HashMap<String, String>),
     List(Box<RSDLType>),

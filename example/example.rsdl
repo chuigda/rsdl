@@ -21,6 +21,7 @@ Type :
 Type2 : Type
       | CXXType
 
+[rust_unsafe_impl(Send, Sync)]
 FFTWPtr = native(rust => "*const FFTW", cxx => "struct FFTW*")
 
 Aux(a: int, b: float, c: list<FFTWPtr>)

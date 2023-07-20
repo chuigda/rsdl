@@ -5,15 +5,40 @@ mod codegen;
 
 use std::collections::{HashSet, VecDeque};
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use pest::Parser;
+use structopt::StructOpt;
 use tracing::{error, info, warn};
-use crate::min_resolv::ResolveContext;
 
+use crate::min_resolv::ResolveContext;
 use crate::parser::pest_parser::{PestRSDLParser, Rule};
 use crate::parser::treeconv::treeconv;
 use crate::preprocess::preprocess;
+
+#[derive(Debug, StructOpt)]
+#[structopt(name = "rsdl", about = "RSDL optimized compiler")]
+struct Options {
+    // -i, --input FILENAME
+    #[structopt(short, long, parse(from_os_str))]
+    input: PathBuf,
+
+    // -o, --output FILENAME
+    #[structopt(short, long, parse(from_os_str))]
+    output: PathBuf,
+
+    // -t, --mode MODE
+    #[structopt(short = "t", long = "mode")]
+    mode: String,
+
+    // --namespace NAMESPACE
+    #[structopt(long)]
+    namespace: Option<String>,
+
+    // --stdlib STDLIB
+    #[structopt(long, parse(from_os_str))]
+    stdlib: Option<PathBuf>
+}
 
 fn main() {
     if let Err(_) = env::var("RUST_LOG") {
@@ -22,18 +47,36 @@ fn main() {
 
     tracing_subscriber::fmt::init();
 
-    let args = env::args().collect::<Vec<String>>();
-    if args.len() != 2 {
-        error!("请指定要处理的文件");
-        return;
+    let opt = Options::from_args();
+
+    let mut tydes = Vec::new();
+    if let Some(stdlib) = opt.stdlib {
+        let display_name = format!("{}", stdlib.display());
+
+        let Ok(content) = std::fs::read_to_string(&stdlib) else {
+            error!("无法打开指定的 stdlib 文件 {display_name}");
+            return;
+        };
+
+        let rsdl = match PestRSDLParser::parse(Rule::rsdl_program, &content) {
+            Ok(rsdl) => rsdl,
+            Err(e) => {
+                error!("解析 stdlib 文件 {display_name} 失败:\n{e}");
+                return;
+            }
+        };
+
+        treeconv(&display_name, rsdl, &mut tydes);
+    } else {
+        let rsdl = PestRSDLParser::parse(Rule::rsdl_program, include_str!("stdlib.rsdl")).unwrap();
+        treeconv("(stdlib)", rsdl, &mut tydes);
     }
 
     let mut preprocessed_files = HashSet::new();
     let mut preprocess_queue: VecDeque<PathBuf> = VecDeque::new();
     let mut parse_stack: Vec<(PathBuf, String)> = Vec::new();
-    let mut tydes = Vec::new();
 
-    let path = Path::new(&args[1]).canonicalize().unwrap();
+    let path = opt.input.canonicalize().unwrap();
     let workdir = path.parent().unwrap().canonicalize().unwrap();
 
     preprocess_queue.push_back(path);

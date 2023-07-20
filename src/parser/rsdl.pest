@@ -2,11 +2,9 @@ WHITESPACE = _{ (" " | "\t" | NEWLINE) }
 
 identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
-scoped_identifier = { (identifier ~ ".")* ~ identifier }
-
 string = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 
-mapping = { identifier ~ "=>" ~ (scoped_identifier | string) }
+mapping = { identifier ~ "=>" ~ string }
 
 mapping_seq = {
   (mapping ~ ",")* ~ mapping
@@ -41,16 +39,16 @@ sum_type = { identifier ~ ":" ~ variant_list }
 
 type_alias = { identifier ~ "=" ~ rsdl_type }
 
-comp_attr = { identifier ~ "(" ~ attr_item_list ~ ")" }
+call_attr = { identifier ~ "(" ~ attr_item_list ~ ")" }
 
-assign_attr = { identifier ~ "=" ~ (identifier | scoped_identifier | string) }
+assign_attr = { identifier ~ "=" ~ (call_attr | identifier | string) }
 
-attr_item = { comp_attr | assign_attr | identifier | string }
+attr_item = { call_attr | assign_attr | identifier | string }
 
 attr_item_list = { (attr_item ~ ",")* ~ attr_item }
 
 attr = { "[" ~ attr_item ~ "]" }
 
-type_decl = { attr* ~ (type_ctor | sum_type | type_alias) }
+type_def = { attr* ~ (type_ctor | sum_type | type_alias) }
 
-rsdl_program = { SOI ~ type_decl* ~ EOI }
+rsdl_program = { SOI ~ type_def* ~ EOI }

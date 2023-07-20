@@ -6,7 +6,8 @@ use std::env;
 use pest::Parser;
 use tracing::error;
 
-use crate::parser::{RSDLParser, Rule};
+use crate::parser::pest_parser::{PestRSDLParser, Rule};
+use crate::parser::treeconv;
 use crate::preprocess::preprocess;
 
 fn main() {
@@ -29,7 +30,7 @@ fn main() {
     };
 
     let preprocessed = preprocess(file_name, &file_content);
-    let rsdl = match RSDLParser::parse(Rule::rsdl_program, &preprocessed.output_src) {
+    let rsdl = match PestRSDLParser::parse(Rule::rsdl_program, &preprocessed.output_src) {
         Ok(rsdl) => rsdl,
         Err(e) => {
             error!("解析 RSDL 文件 {file_name} 失败:\n{e}");
@@ -37,5 +38,5 @@ fn main() {
         }
     };
 
-    println!("{:#?}", rsdl);
+    dbg!(treeconv(rsdl));
 }

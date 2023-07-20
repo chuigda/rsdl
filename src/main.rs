@@ -17,7 +17,7 @@ use crate::parser::treeconv::treeconv;
 use crate::preprocess::preprocess;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "rsdl", about = "RSDL optimized compiler")]
+#[structopt(name = "rsdl", about = "RSDL 优化编译器")]
 struct Options {
     // -i, --input FILENAME
     #[structopt(short, long, parse(from_os_str))]

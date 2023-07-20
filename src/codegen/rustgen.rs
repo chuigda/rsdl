@@ -89,6 +89,7 @@ impl RustGenerator {
         &self,
         attr_list: &[AttrItem],
         rust_attr_name: &str,
+        indent: &str,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
         for attr in attr_list {
@@ -96,7 +97,11 @@ impl RustGenerator {
                 AttrItem::CallAlike(fn_alike, param_alike) => {
                     if fn_alike == rust_attr_name {
                         for rust_attr in param_alike {
-                            output.push(format!("#[{}]", self.gen_single_rust_attr(rust_attr)?));
+                            output.push(format!(
+                                "{}#[{}]",
+                                indent,
+                                self.gen_single_rust_attr(rust_attr)?
+                            ));
                         }
                     }
                 },
@@ -112,7 +117,7 @@ impl RustGenerator {
         attr: &AttrItem
     ) -> Result<String, Box<dyn Error>> {
         match attr {
-            AttrItem::Identifier(ident) => Ok(format!("#[{}]", ident)),
+            AttrItem::Identifier(ident) => Ok(ident.to_string()),
             AttrItem::CallAlike(fn_alike, param_alike) => {
                 let param_str = param_alike
                     .iter()
@@ -120,12 +125,12 @@ impl RustGenerator {
                     .collect::<Result<Vec<_>, _>>()?
                     .join(", ");
 
-                Ok(format!("#[{}({})]", fn_alike, param_str))
+                Ok(format!("{}({})", fn_alike, param_str))
             },
             AttrItem::Assignment(assignee, value) => {
                 match value.as_ref() {
-                    AttrItem::String(s) => Ok(format!("#[{} = \"{}\"]", assignee, s)),
-                    AttrItem::Identifier(ident) => Ok(format!("#[{} = {}]", assignee, ident)),
+                    AttrItem::String(s) => Ok(format!("{} = \"{}\"", assignee, s)),
+                    AttrItem::Identifier(ident) => Ok(format!("{} = {}", assignee, ident)),
                     _ => Err("属性赋值的值必须是字符串字面量或标识符".into())
                 }
             },
@@ -137,7 +142,7 @@ impl RustGenerator {
         &self,
         attr_list: &[AttrItem],
         doc_attr_name: &str,
-        doc_indent: &str,
+        indent: &str,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
         for attr in attr_list {
@@ -153,7 +158,7 @@ impl RustGenerator {
                         }
 
                         if let AttrItem::String(doc) = &param_alike[0] {
-                            output.push(format!("{}/// {}", doc_indent, doc));
+                            output.push(format!("{}/// {}", indent, doc));
                         } else {
                             return Err(format!(
                                 "{} 属性的参数必须是字符串字面量",
@@ -165,7 +170,7 @@ impl RustGenerator {
                 AttrItem::Assignment(assignee, value) => {
                     if assignee == doc_attr_name {
                         if let AttrItem::String(doc) = value.as_ref() {
-                            output.push(format!("{}/// {}", doc_indent, doc));
+                            output.push(format!("{}/// {}", indent, doc));
                         } else {
                             return Err(format!(
                                 "{} 属性的参数必须是字符串字面量",
@@ -195,7 +200,7 @@ impl RustGenerator {
         }
 
         self.gen_doc(attr, doc_attr_name, "", output)?;
-        self.gen_rust_attr(attr, rust_attr_name, output)?;
+        self.gen_rust_attr(attr, rust_attr_name, "", output)?;
         self.gen_rust_derive(attr, output)?;
         let private = self.check_private(attr);
 
@@ -207,7 +212,7 @@ impl RustGenerator {
 
         for (attr, optional, field_type, field_name) in &type_ctor.fields {
             self.gen_doc(attr, "doc", "    ", output)?;
-            self.gen_rust_attr(attr, "rust_attr", output)?;
+            self.gen_rust_attr(attr, "rust_attr", "    ", output)?;
             let field_private = self.check_private(attr);
 
             if *optional {
@@ -331,7 +336,7 @@ impl CodeGenerator for RustGenerator {
         }
 
         self.gen_doc(attr, "doc", "", output)?;
-        self.gen_rust_attr(attr, "rust_attr", output)?;
+        self.gen_rust_attr(attr, "rust_attr", "", output)?;
         let private = self.check_private(attr);
 
         output.push(format!(
@@ -402,7 +407,7 @@ impl CodeGenerator for RustGenerator {
         }
 
         self.gen_doc(attr, "doc", "", output)?;
-        self.gen_rust_attr(attr, "rust_attr", output)?;
+        self.gen_rust_attr(attr, "rust_attr", "", output)?;
         self.gen_rust_derive(attr, output)?;
         let private = self.check_private(attr);
 
@@ -414,7 +419,7 @@ impl CodeGenerator for RustGenerator {
 
         for (variant_attr, variant) in &sum_type.scalar_variants {
             self.gen_doc(variant_attr, "doc", "    ", output)?;
-            self.gen_rust_attr(variant_attr, "rust_attr", output)?;
+            self.gen_rust_attr(variant_attr, "rust_attr", "    ", output)?;
 
             output.push(format!(
                 "    {},",
@@ -424,7 +429,7 @@ impl CodeGenerator for RustGenerator {
 
         for (ctor_attr, ctor) in &sum_type.ctors {
             self.gen_doc(ctor_attr, "doc", "    ", output)?;
-            self.gen_rust_attr(ctor_attr, "rust_attr", output)?;
+            self.gen_rust_attr(ctor_attr, "rust_attr", "    ", output)?;
 
             output.push(format!(
                 "    {}({}),",

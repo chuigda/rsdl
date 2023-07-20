@@ -1,28 +1,34 @@
-#!/usr/bin/env rsdl
-
-DType = list<int>
-
-[allow_jarvis = minion]
-[delete_charlies(defn)]
-NatType = native(rust => "RustType", cxx => "CXXType")
-
+[doc("学生的信息")]
 [rust_derive(Debug, Clone)]
-[rust_codegen_preference(str = owned_std_string, int = i64)]
-[doc("一个类型")]
-Type :
-     [doc("第一个变体?")]
-     [doc("bzdn")]
-     [doc_ctor("这个文档注释会被加在 IntType 类型上，而不是 Type 的变体上")]
-     [rust_derive(Debug, Clone)]
-     IntType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
-     | [rust_derive(Debug, Clone)] FloatType([typescript_prefer_bigint] [es3_prefer_string] bits: int)
-     | [rust_derive(Debug, Clone)] RustType(name: str)
+StudentInfo(
+    [doc("学号")]
+    id: int,
+    [doc("姓名")]
+    name: str,
+    [doc("选课")]
+    course: list<Course>,
+    [doc("成绩")]
+    score: list<int>,
 
+    [private]
+    [rust_attr(cfg(feature = "thread_safety"))]
+    phantom: Phantom
+)
+
+[doc("课程的信息")]
 [rust_derive(Debug, Clone)]
-Type2 : Type
-      | NatType
+Course(
+    [doc("课程 ID")]
+    id: int,
+    [doc("课程名称")]
+    name: str,
+    [doc("学分")]
+    credit: int,
 
-[rust_unsafe_impl(Send, Sync)]
-FFTWPtr = native(rust => "*const FFTW", cxx => "struct FFTW*")
+    [private]
+    [rust_attr(cfg(feature = "thread_safety"))]
+    phantom: Phantom
+)
 
-Aux(a: int, b: float, c: list<FFTWPtr>)
+[private]
+Phantom = native(rust => "PhantomData<*const ()>")

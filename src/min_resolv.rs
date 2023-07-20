@@ -153,6 +153,4 @@ impl ResolveContext {
 
         Ok(())
     }
-
-
 }

@@ -1,21 +1,26 @@
+[private]
 int = native(
   rust => "i64",
   typescript => "number",
   julia => "Int64"
 )
 
+[private]
 float = native(
   rust => "f64",
   typescript => "number",
   julia => "Float64"
 )
 
+[private]
+[rust_skip]
 bool = native(
   rust => "bool",
   typescript => "boolean",
   julia => "Bool"
 )
 
+[private]
 str = native(
   rust => "String",
   typescript => "string",

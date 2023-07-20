@@ -7,6 +7,8 @@ use std::collections::{HashSet, VecDeque};
 use std::env;
 use std::path::PathBuf;
 
+use codegen::codegen;
+use codegen::rustgen::RustGenerator;
 use pest::Parser;
 use structopt::StructOpt;
 use tracing::{error, info, warn};
@@ -48,6 +50,11 @@ fn main() {
     tracing_subscriber::fmt::init();
 
     let opt = Options::from_args();
+
+    if opt.mode != "rust" {
+        error!("不支持的输出模式 {}", opt.mode);
+        return;
+    }
 
     let mut tydes = Vec::new();
     if let Some(stdlib) = opt.stdlib {
@@ -139,6 +146,20 @@ fn main() {
     for tyde in tydes.iter() {
         if resolve_ctx.min_resolv_chk(tyde).is_err() {
             return;
+        }
+    }
+
+    let mut generator = RustGenerator();
+    if let Ok(output) = codegen(
+        opt.namespace.as_ref().map(|s| s.as_str()),
+        &tydes,
+        &resolve_ctx,
+        &mut generator
+    ) {
+        let output = output.join("\n");
+        
+        if let Err(e) = std::fs::write(&opt.output, output) {
+            error!("无法写入输出文件 {}: {}", opt.output.display(), e);
         }
     }
 }

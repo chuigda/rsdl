@@ -10,8 +10,13 @@ mapping_seq = {
   (mapping ~ ",")* ~ mapping
 }
 
-list_type = { "[" ~ rsdl_type ~ "]" }
-record_type = { "{" ~ "str" ~ "=>" ~ rsdl_type ~ "}" }
+list_type = { (
+  "[" ~ rsdl_type ~ "]" |
+  "list" ~ "<" ~ rsdl_type ~ ">"
+) }
+
+record_type = { "record" ~ "<" ~ "str" ~ "," ~ rsdl_type ~ ">" }
+
 native_type = { "native(" ~ mapping_seq ~ ")" }
 
 rsdl_type = {
@@ -20,9 +25,9 @@ rsdl_type = {
   "str" |
   "bool" |
   native_type |
-  identifier |
   list_type |
-  record_type
+  record_type |
+  identifier
 }
 
 field = { attr* ~ identifier ~ ":" ~ rsdl_type }

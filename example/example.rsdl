@@ -1,6 +1,8 @@
+#!/usr/bin/env rsdl
 #include "exist.rsdl"
 
-DType = [int]
+DType = list<int>
+
 [allow_jarvis = minion]
 [delete_charlies(defn)]
 CXXType = native(rust => "RustType", cxx => "CXXType")
@@ -19,4 +21,6 @@ Type :
 Type2 : Type
       | CXXType
 
-Aux(a: int, b: float, c: FFTWPtr)
+FFTWPtr = native(rust => "*const FFTW", cxx => "struct FFTW*")
+
+Aux(a: int, b: float, c: list<FFTWPtr>)

@@ -2,7 +2,7 @@
 
 ----
 
-RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf)，
+RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )，
 用于从同一套类型定义生成不同语言的数据结构定义、序列化以及反序列化。RSDL 主要引入了预处理指令
 #include，以及注解语法
 

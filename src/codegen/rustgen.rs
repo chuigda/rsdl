@@ -85,6 +85,17 @@ impl RustGenerator {
         false
     }
 
+    fn check_boxed(&self, attr_list: &[AttrItem]) -> bool {
+        for attr in attr_list {
+            if let AttrItem::Identifier(ident) = attr {
+                if ident == "boxed" {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
     fn gen_rust_attr(
         &self,
         attr_list: &[AttrItem],
@@ -214,22 +225,29 @@ impl RustGenerator {
             self.gen_doc(attr, "doc", "    ", output)?;
             self.gen_rust_attr(attr, "rust_attr", "    ", output)?;
             let field_private = self.check_private(attr);
+            let field_boxed = self.check_boxed(attr);
+
+            let inner_type = if field_boxed {
+                format!("Box<{}>", self.type_to_string(field_type)
+                    .ok_or("RSDL native 类型缺少对应的 Rust 类型")?)
+            } else {
+                self.type_to_string(field_type)
+                    .ok_or("RSDL native 类型缺少对应的 Rust 类型")?
+            };
 
             if *optional {
                 output.push(format!(
                     "    {}{}: Option<{}>,",
                     if field_private { "" } else { "pub " },
                     field_name,
-                    self.type_to_string(field_type)
-                        .ok_or("RSDL native 类型缺少对应的 Rust 类型")?
+                    inner_type
                 ));
             } else {
                 output.push(format!(
                     "    {}{}: {},",
                     if field_private { "" } else { "pub " },
                     field_name,
-                    self.type_to_string(field_type)
-                        .ok_or("RSDL native 类型缺少对应的 Rust 类型")?
+                    inner_type
                 ));
             }
         }

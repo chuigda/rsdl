@@ -21,6 +21,7 @@ Course(
     [doc("课程 ID")]
     id: int,
     [doc("课程名称")]
+    [boxed]
     name: str,
     [doc("学分")]
     credit: int,

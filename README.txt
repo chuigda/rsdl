@@ -10,7 +10,7 @@ RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )
   - Rust (by @NEETovo)
 
 计划支持的后端有:
-  - TypeScript (class-based)
+  - TypeScript (class-based) + custom deserialization
   - TypeScript (interface-based) + typeAssert
   - C++ + Qt + QtJSON
 
@@ -20,10 +20,9 @@ RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )
   - 总则: 无论何时，注解的行为总是由生成器决定的，注解本身只是起到一种“建议”作用
 
 通用注解
-
   - [boxed]
-    在一些像 C++ 和 Rust 这样的语言中，创建互递归的数据结构需要使用指针，boxed 用来
-    要求生成器为指定的字段生成指针类型，而不是直接嵌入类型定义
+    在一些像 C++ 和 Rust 这样的值类型语言中，创建互递归的数据结构需要使用指针来
+    引入间接性。boxed 用来建议生成器为指定的字段生成一个指针
   - [doc("docstring")] 或者 [doc = "docstring"]
     要求生成器为指定的实体生成文档注释
   - [doc_ctor("docstring")] 或者 [doc_ctor = "docstring"]

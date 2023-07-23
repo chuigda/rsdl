@@ -7,7 +7,9 @@ use crate::{
     parser::hir::{
         RSDLType,
         AttrItem,
-        TypeConstructor
+        TypeConstructor, 
+        check_private,
+        check_boxed, check_ident_attr
     },
     min_resolv::ResolveContext
 };
@@ -63,37 +65,8 @@ impl RustGenerator {
         Ok(())
     }
 
-    fn check_private(&self, attr_list: &[AttrItem]) -> bool {
-        for attr in attr_list {
-            if let AttrItem::Identifier(ident) = attr {
-                if ident == "private" {
-                    return true;
-                }
-            }
-        }
-        false
-    }
-
     fn check_rust_skip(&self, attr_list: &[AttrItem]) -> bool {
-        for attr in attr_list {
-            if let AttrItem::Identifier(ident) = attr {
-                if ident == "rust_skip" {
-                    return true;
-                }
-            }
-        }
-        false
-    }
-
-    fn check_boxed(&self, attr_list: &[AttrItem]) -> bool {
-        for attr in attr_list {
-            if let AttrItem::Identifier(ident) = attr {
-                if ident == "boxed" {
-                    return true;
-                }
-            }
-        }
-        false
+        check_ident_attr(attr_list, "rust_skip")
     }
 
     fn gen_rust_attr(
@@ -213,7 +186,7 @@ impl RustGenerator {
         self.gen_doc(attr, doc_attr_name, "", output)?;
         self.gen_rust_attr(attr, rust_attr_name, "", output)?;
         self.gen_rust_derive(attr, output)?;
-        let private = self.check_private(attr);
+        let private = check_private(attr);
 
         output.push(format!(
             "{}struct {} {{",
@@ -224,8 +197,8 @@ impl RustGenerator {
         for (attr, optional, field_type, field_name) in &type_ctor.fields {
             self.gen_doc(attr, "doc", "    ", output)?;
             self.gen_rust_attr(attr, "rust_attr", "    ", output)?;
-            let field_private = self.check_private(attr);
-            let field_boxed = self.check_boxed(attr);
+            let field_private = check_private(attr);
+            let field_boxed = check_boxed(attr);
 
             let inner_type = if field_boxed {
                 format!("Box<{}>", self.type_to_string(field_type)
@@ -355,7 +328,7 @@ impl CodeGenerator for RustGenerator {
 
         self.gen_doc(attr, "doc", "", output)?;
         self.gen_rust_attr(attr, "rust_attr", "", output)?;
-        let private = self.check_private(attr);
+        let private = check_private(attr);
 
         output.push(format!(
             "{}type {} = {};",
@@ -427,7 +400,7 @@ impl CodeGenerator for RustGenerator {
         self.gen_doc(attr, "doc", "", output)?;
         self.gen_rust_attr(attr, "rust_attr", "", output)?;
         self.gen_rust_derive(attr, output)?;
-        let private = self.check_private(attr);
+        let private = check_private(attr);
 
         output.push(format!(
             "{}enum {} {{",

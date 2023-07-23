@@ -43,3 +43,22 @@ pub struct TypeDef {
     pub attr: SmallVec<[AttrItem; 2]>,
     pub inner: TypeDefInner
 }
+
+pub fn check_ident_attr(attr_list: &[AttrItem], checked_ident: &str) -> bool {
+    for attr in attr_list {
+        if let AttrItem::Identifier(ident) = attr {
+            if ident == checked_ident {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+pub fn check_private(attr_list: &[AttrItem]) -> bool {
+    check_ident_attr(attr_list, "private")
+}
+
+pub fn check_boxed(attr_list: &[AttrItem]) -> bool {
+    check_ident_attr(attr_list, "boxed")
+}

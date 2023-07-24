@@ -3,6 +3,7 @@ use std::error::Error;
 use crate::{
     codegen::CodeGenerator,
     parser::hir::{
+        SumType,
         RSDLType,
         AttrItem,
         TypeConstructor,
@@ -13,8 +14,6 @@ use crate::{
     },
     min_resolv::ResolveContext
 };
-use crate::codegen::rustgen::RustGenerator;
-use crate::parser::hir::SumType;
 
 pub struct JuliaGenerator();
 
@@ -46,9 +45,29 @@ impl JuliaGenerator {
         check_ident_attr(attr_list, "jl_skip") ||
         check_ident_attr(attr_list, "julia_skip")
     }
+
+    fn gen_doc_simple(
+        &self,
+        attr_list: &[AttrItem],
+        doc_attr_name: &str,
+        indent: &str,
+        output: &mut Vec<String>
+    ) -> Result<(), Box<dyn Error>> {
+        let doc_string_lines = extract_doc_strings(attr_list, doc_attr_name)?;
+        if doc_string_lines.is_empty() {
+            return Ok(());
+        }
+
+        output.push(format!("{}\"\"\"", indent));
+        for line in doc_string_lines {
+            output.push(format!("{}{}", indent, line));
+        }
+        output.push(format!("{}\"\"\"", indent));
+        Ok(())
+    }
 }
 
-impl CodeGenerator for RustGenerator {
+impl CodeGenerator for JuliaGenerator {
     fn generator_name(&self) -> &'static str {
         "Julia 代码生成器"
     }
@@ -115,28 +134,70 @@ impl CodeGenerator for RustGenerator {
 
     fn visit_type_alias(
         &mut self,
-        ctx: &ResolveContext,
+        _ctx: &ResolveContext,
         attr: &[AttrItem],
         alias_name: &str,
         target_type: &RSDLType,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
+        if self.check_julia_skip(attr) {
+            return Ok(());
+        }
+
+        self.gen_doc_simple(attr, "doc", "", output)?;
+
+        let target_type_name = self.type_to_string(target_type)
+            .ok_or("RSDL native 类型缺少对应的 Julia 类型")?;
+
+        output.push(format!(
+            "const {} = {};",
+            alias_name,
+            target_type_name
+        ));
+        output.push("".to_string());
+
+        Ok(())
+    }
+
+    fn visit_simple_type(
+        &mut self,
+        _ctx: &ResolveContext,
+        attr: &[AttrItem],
+        type_ctor: &TypeConstructor,
+        output: &mut Vec<String>
+    ) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 
-    fn visit_simple_type(&mut self, ctx: &ResolveContext, attr: &[AttrItem], type_ctor: &TypeConstructor, output: &mut Vec<String>) -> Result<(), Box<dyn Error>> {
+    fn visit_sum_type_ctor(
+        &mut self,
+        _ctx: &ResolveContext,
+        attr: &[AttrItem],
+        ctor: &TypeConstructor,
+        sum_type: &SumType,
+        output: &mut Vec<String>
+    ) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 
-    fn visit_sum_type_ctor(&mut self, ctx: &ResolveContext, attr: &[AttrItem], ctor: &TypeConstructor, sum_type: &SumType, output: &mut Vec<String>) -> Result<(), Box<dyn Error>> {
+    fn visit_sum_type_scalar_variant(
+        &mut self,
+        ctx: &ResolveContext,
+        attr: &[AttrItem],
+        variant_name: &str,
+        sum_type: &SumType,
+        output: &mut Vec<String>
+    ) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 
-    fn visit_sum_type_scalar_variant(&mut self, ctx: &ResolveContext, attr: &[AttrItem], variant_name: &str, sum_type: &SumType, output: &mut Vec<String>) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
-
-    fn visit_sum_type(&mut self, ctx: &ResolveContext, attr: &[AttrItem], sum_type: &SumType, output: &mut Vec<String>) -> Result<(), Box<dyn Error>> {
+    fn visit_sum_type(
+        &mut self,
+        ctx: &ResolveContext,
+        attr: &[AttrItem],
+        sum_type: &SumType,
+        output: &mut Vec<String>
+    ) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 }

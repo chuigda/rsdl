@@ -5,6 +5,7 @@ use smallvec::SmallVec;
 use crate::{
     codegen::CodeGenerator,
     parser::hir::{
+        SumType,
         RSDLType,
         AttrItem,
         TypeConstructor, 
@@ -151,7 +152,7 @@ impl RustGenerator {
 
         doc_attr_name: &str,
         rust_attr_name: &str
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         if self.check_rust_skip(attr) {
             return Ok(());
         }
@@ -273,7 +274,7 @@ impl CodeGenerator for RustGenerator {
         &mut self,
         namespace: &str,
         output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         output.push(format!("pub mod {} {{", namespace));
         Ok(())
     }
@@ -282,7 +283,7 @@ impl CodeGenerator for RustGenerator {
         &mut self,
         namespace: &str,
         output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         output.push(format!("}} // mod {}", namespace));
         Ok(())
     }
@@ -292,9 +293,9 @@ impl CodeGenerator for RustGenerator {
         _ctx: &ResolveContext,
         attr: &[AttrItem],
         alias_name: &str,
-        target_type: &crate::parser::hir::RSDLType,
+        target_type: &RSDLType,
         output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         if self.check_rust_skip(attr) {
             return Ok(());
         }
@@ -321,7 +322,7 @@ impl CodeGenerator for RustGenerator {
         attr: &[AttrItem],
         type_ctor: &TypeConstructor,
         output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         self.imp_visit_simple_type(
             attr,
             type_ctor,
@@ -336,9 +337,9 @@ impl CodeGenerator for RustGenerator {
         _ctx: &ResolveContext,
         attr: &[AttrItem],
         ctor: &TypeConstructor,
-        _sum_type: &crate::parser::hir::SumType,
+        _sum_type: &SumType,
         output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         self.imp_visit_simple_type(
             attr,
             ctor,
@@ -353,9 +354,9 @@ impl CodeGenerator for RustGenerator {
         _ctx: &ResolveContext,
         _attr: &[AttrItem],
         _variant_name: &str,
-        _sum_type: &crate::parser::hir::SumType,
+        _sum_type: &SumType,
         _output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 
@@ -363,9 +364,9 @@ impl CodeGenerator for RustGenerator {
         &mut self,
         _ctx: &ResolveContext,
         attr: &[AttrItem],
-        sum_type: &crate::parser::hir::SumType,
+        sum_type: &SumType,
         output: &mut Vec<String>
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         if self.check_rust_skip(attr) {
             return Ok(());
         }

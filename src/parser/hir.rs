@@ -120,3 +120,7 @@ pub fn extract_doc_strings(
 
     Ok(ret)
 }
+
+pub fn check_inline(attr_list: &[AttrItem]) -> bool {
+    check_ident_attr(attr_list, "inline")
+}

@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use tracing::error;
 
-use crate::parser::hir::{RSDLType, TypeDef, TypeDefInner};
+use crate::parser::hir::{check_inline, RSDLType, TypeDef, TypeDefInner};
 
 #[derive(Default)]
 pub struct ResolveContext {
-    pub known_types: HashMap<String, (String, Option<RSDLType>)>
+    pub known_types: HashMap<String, (String, Option<RSDLType>, bool)>
 }
 
 impl ResolveContext {
@@ -27,7 +27,8 @@ impl ResolveContext {
                     return Err(());
                 }
 
-                self.known_types.insert(name.clone(), (tyde.file.clone(), Some(ty.clone())));
+                let is_inline = check_inline(&tyde.attr);
+                self.known_types.insert(name.clone(), (tyde.file.clone(), Some(ty.clone()), is_inline));
             },
             TypeDefInner::SimpleType(ctor) => {
                 if let Some((exist_in_file, _)) = self.known_types.get(&ctor.name) {
@@ -40,7 +41,7 @@ impl ResolveContext {
                     return Err(());
                 }
 
-                self.known_types.insert(ctor.name.clone(), (tyde.file.clone(), None));
+                self.known_types.insert(ctor.name.clone(), (tyde.file.clone(), None, false));
             },
             TypeDefInner::SumType(sum) => {
                 if let Some((exist_in_file, _)) = self.known_types.get(&sum.name) {
@@ -53,7 +54,7 @@ impl ResolveContext {
                     return Err(());
                 }
 
-                self.known_types.insert(sum.name.clone(), (tyde.file.clone(), None));
+                self.known_types.insert(sum.name.clone(), (tyde.file.clone(), None, false));
 
                 if !sum.ctors.is_empty() {
                     for (_, ctor) in &sum.ctors {
@@ -68,7 +69,7 @@ impl ResolveContext {
                             return Err(());
                         }
 
-                        self.known_types.insert(ctor.name.clone(), (tyde.file.clone(), None));
+                        self.known_types.insert(ctor.name.clone(), (tyde.file.clone(), None, false));
                     }
 
                     for (_, variant) in &sum.scalar_variants {
@@ -83,7 +84,7 @@ impl ResolveContext {
                             return Err(());
                         }
 
-                        self.known_types.insert(variant.clone(), (tyde.file.clone(), None));
+                        self.known_types.insert(variant.clone(), (tyde.file.clone(), None, false));
                     }
                 }
             }

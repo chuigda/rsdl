@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::{error::Error, fmt::format};
 
 use crate::{

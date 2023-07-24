@@ -9,7 +9,9 @@ use crate::{
         AttrItem,
         TypeConstructor, 
         check_private,
-        check_boxed, check_ident_attr
+        check_boxed,
+        check_ident_attr,
+        extract_doc_strings
     },
     min_resolv::ResolveContext
 };
@@ -129,42 +131,13 @@ impl RustGenerator {
         indent: &str,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
-        for attr in attr_list {
-            match attr {
-                AttrItem::CallAlike(fn_alike, param_alike) => {
-                    if fn_alike == doc_attr_name {
-                        if param_alike.len() != 1 {
-                            return Err(format!(
-                                "{} 属性的参数数量必须为 1，但是此处有 {} 个参数",
-                                doc_attr_name,
-                                param_alike.len()
-                            ).into());
-                        }
+        let doc_string_lines = extract_doc_strings(attr_list, doc_attr_name)?;
+        if doc_string_lines.is_empty() {
+            return Ok(());
+        }
 
-                        if let AttrItem::String(doc) = &param_alike[0] {
-                            output.push(format!("{}/// {}", indent, doc));
-                        } else {
-                            return Err(format!(
-                                "{} 属性的参数必须是字符串字面量",
-                                doc_attr_name
-                            ).into());
-                        }
-                    }
-                },
-                AttrItem::Assignment(assignee, value) => {
-                    if assignee == doc_attr_name {
-                        if let AttrItem::String(doc) = value.as_ref() {
-                            output.push(format!("{}/// {}", indent, doc));
-                        } else {
-                            return Err(format!(
-                                "{} 属性的参数必须是字符串字面量",
-                                doc_attr_name
-                            ).into());
-                        }
-                    }
-                },
-                _ => {}
-            }
+        for line in doc_string_lines {
+            output.push(format!("{}/// {}", indent, line));
         }
 
         Ok(())

@@ -1,5 +1,6 @@
 pub mod rustgen;
 pub mod tsgen;
+pub mod jlgen;
 
 use std::collections::HashSet;
 use std::error::Error;
@@ -7,7 +8,14 @@ use std::ops::Deref;
 use tracing::error;
 
 use crate::min_resolv::ResolveContext;
-use crate::parser::hir::{AttrItem, RSDLType, SumType, TypeConstructor, TypeDef, TypeDefInner};
+use crate::parser::hir::{
+    AttrItem,
+    RSDLType,
+    SumType,
+    TypeConstructor,
+    TypeDef,
+    TypeDefInner
+};
 
 pub trait CodeGenerator {
     fn generator_name(&self) -> &'static str;

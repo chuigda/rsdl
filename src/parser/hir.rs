@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 use smallvec::SmallVec;
 
 #[derive(Debug, Clone)]
@@ -61,4 +62,61 @@ pub fn check_private(attr_list: &[AttrItem]) -> bool {
 
 pub fn check_boxed(attr_list: &[AttrItem]) -> bool {
     check_ident_attr(attr_list, "boxed")
+}
+
+pub fn extract_doc_strings(
+    attr_list: &[AttrItem],
+    doc_attr_name: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut ret = Vec::new();
+
+    fn add_doc_string(output: &mut Vec<String>, doc_string: &str) {
+        if doc_string.contains("\n") {
+            for line in doc_string.split("\n") {
+                output.push(line.trim().to_string());
+            }
+        } else {
+            output.push(doc_string.trim().to_string());
+        }
+    }
+
+    for attr in attr_list {
+        match attr {
+            AttrItem::CallAlike(fn_alike, param_alike) => {
+                if fn_alike == doc_attr_name {
+                    if param_alike.len() != 1 {
+                        return Err(format!(
+                            "{} 属性的参数数量必须为 1，但是此处有 {} 个参数",
+                            doc_attr_name,
+                            param_alike.len()
+                        ).into());
+                    }
+
+                    if let AttrItem::String(doc) = &param_alike[0] {
+                        add_doc_string(&mut ret, doc);
+                    } else {
+                        return Err(format!(
+                            "{} 属性的参数必须是字符串字面量",
+                            doc_attr_name
+                        ).into());
+                    }
+                }
+            },
+            AttrItem::Assignment(assignee, value) => {
+                if assignee == doc_attr_name {
+                    if let AttrItem::String(doc) = value.as_ref() {
+                        add_doc_string(&mut ret, &doc);
+                    } else {
+                        return Err(format!(
+                            "{} 属性的值必须是字符串字面量",
+                            doc_attr_name
+                        ).into());
+                    }
+                }
+            },
+            _ => {}
+        }
+    }
+
+    Ok(ret)
 }

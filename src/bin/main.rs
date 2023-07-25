@@ -1,22 +1,17 @@
-mod min_resolv;
-mod parser;
-mod preprocess;
-mod codegen;
-
 use std::collections::{HashSet, VecDeque};
 use std::env;
 use std::path::PathBuf;
 
-use codegen::codegen;
-use codegen::rustgen::RustGenerator;
 use pest::Parser;
 use structopt::StructOpt;
 use tracing::{error, info, warn};
 
-use crate::min_resolv::ResolveContext;
-use crate::parser::pest_parser::{PestRSDLParser, Rule};
-use crate::parser::treeconv::treeconv;
-use crate::preprocess::preprocess;
+use rsdl_core::codegen::codegen;
+use rsdl_core::codegen::rustgen::RustGenerator;
+use rsdl_core::min_resolv::ResolveContext;
+use rsdl_core::parser::pest_parser::{PestRSDLParser, Rule};
+use rsdl_core::parser::treeconv::treeconv;
+use rsdl_core::preprocess::preprocess;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "rsdl", about = "RSDL 优化编译器")]
@@ -75,7 +70,7 @@ fn main() {
 
         treeconv(&display_name, rsdl, &mut tydes);
     } else {
-        let rsdl = PestRSDLParser::parse(Rule::rsdl_program, include_str!("stdlib.rsdl")).unwrap();
+        let rsdl = PestRSDLParser::parse(Rule::rsdl_program, include_str!("../stdlib.rsdl")).unwrap();
         treeconv("(stdlib)", rsdl, &mut tydes);
     }
 

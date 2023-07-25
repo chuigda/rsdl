@@ -88,7 +88,7 @@ pub fn codegen(
         .into_iter()
         .map(Deref::deref)
         .collect::<HashSet<_>>();
-    for (ty_name, (exist_in_file, _)) in ctx.known_types.iter() {
+    for (ty_name, (exist_in_file, _, _)) in ctx.known_types.iter() {
         if reserved_idents.contains(ty_name.as_str()) {
             return Err(format!(
                 "{}: 生成器报告文件 {} 中的类型名 {} 与保留标识符冲突",

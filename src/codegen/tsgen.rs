@@ -8,7 +8,8 @@ use crate::{
         RSDLType,
         AttrItem,
         TypeConstructor,
-        check_ident_attr, check_private
+        check_ident_attr,
+        check_private
     },
     min_resolv::ResolveContext
 };

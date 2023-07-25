@@ -17,7 +17,7 @@ impl ResolveContext {
     pub fn min_resolv(&mut self, tyde: &TypeDef) -> Result<(), ()> {
         match &tyde.inner {
             TypeDefInner::AliasType(name, ty) => {
-                if let Some((exist_in_file, _)) = self.known_types.get(name) {
+                if let Some((exist_in_file, _, _)) = self.known_types.get(name) {
                     error!(
                         "{}: 重复的类型定义 {}，此类型先前已经定义于 {}",
                         tyde.file,
@@ -31,7 +31,7 @@ impl ResolveContext {
                 self.known_types.insert(name.clone(), (tyde.file.clone(), Some(ty.clone()), is_inline));
             },
             TypeDefInner::SimpleType(ctor) => {
-                if let Some((exist_in_file, _)) = self.known_types.get(&ctor.name) {
+                if let Some((exist_in_file, _, _)) = self.known_types.get(&ctor.name) {
                     error!(
                         "{}: 重复的类型定义 {}，此类型先前已经定义于 {}",
                         tyde.file,
@@ -44,7 +44,7 @@ impl ResolveContext {
                 self.known_types.insert(ctor.name.clone(), (tyde.file.clone(), None, false));
             },
             TypeDefInner::SumType(sum) => {
-                if let Some((exist_in_file, _)) = self.known_types.get(&sum.name) {
+                if let Some((exist_in_file, _, _)) = self.known_types.get(&sum.name) {
                     error!(
                         "{}: 重复的类型定义 {}，此类型先前已经定义于 {}",
                         tyde.file,
@@ -58,7 +58,7 @@ impl ResolveContext {
 
                 if !sum.ctors.is_empty() {
                     for (_, ctor) in &sum.ctors {
-                        if let Some((exist_in_file, _)) = self.known_types.get(&ctor.name) {
+                        if let Some((exist_in_file, _, _)) = self.known_types.get(&ctor.name) {
                             error!(
                                 "{}: 重复的类型定义 {} (和类型 {} 的构造器)，此类型先前已经定义于 {}",
                                 tyde.file,
@@ -73,7 +73,7 @@ impl ResolveContext {
                     }
 
                     for (_, variant) in &sum.scalar_variants {
-                        if let Some((exist_in_file, _)) = self.known_types.get(variant) {
+                        if let Some((exist_in_file, _, _)) = self.known_types.get(variant) {
                             error!(
                                 "{}: 重复的类型定义 {} (和类型 {} 的标量变体)，此类型先前已经定义于 {}",
                                 tyde.file,
@@ -123,7 +123,7 @@ impl ResolveContext {
                     for (_, _, ty, name) in &ctor.fields {
                         if let Err(ident) = self.chktype(ty) {
                             error!(
-                                "{}: 类型 {} 的构造器 {} 的字段 {} 引用了未知的类型 {}",
+                                "{}: 类型 {} 构造器 {} 的字段 {} 引用了未知的类型 {}",
                                 tyde.file,
                                 sum_type.name,
                                 ctor.name,

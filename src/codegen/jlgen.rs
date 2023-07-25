@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::error::Error;
 
 use crate::{
@@ -7,8 +9,6 @@ use crate::{
         RSDLType,
         AttrItem,
         TypeConstructor,
-        check_private,
-        check_boxed,
         check_ident_attr,
         extract_doc_strings
     },

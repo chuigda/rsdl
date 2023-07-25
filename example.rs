@@ -25,7 +25,7 @@ pub struct Course {
     /// 课程 ID
     pub id: int,
     /// 课程名称
-    pub name: str,
+    pub name: Box<str>,
     /// 学分
     pub credit: int,
     #[cfg(feature = "thread_safety")]

@@ -16,6 +16,7 @@ use crate::{
     },
     min_resolv::ResolveContext
 };
+use crate::codegen::CodeGeneratorFactory;
 
 pub struct RustGenerator();
 
@@ -407,5 +408,21 @@ impl CodeGenerator for RustGenerator {
         output.push("".to_string());
 
         Ok(())
+    }
+}
+
+pub struct RustGeneratorFactory();
+
+impl CodeGeneratorFactory for RustGeneratorFactory {
+    fn generator_name(&self) -> &'static str {
+        RustGenerator().generator_name()
+    }
+
+    fn lang_ident(&self) -> &'static str {
+        RustGenerator().lang_ident()
+    }
+
+    fn create(&self) -> Box<dyn CodeGenerator> {
+        Box::new(RustGenerator())
     }
 }

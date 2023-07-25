@@ -1,6 +1,4 @@
 pub mod rustgen;
-pub mod tsgen;
-pub mod jlgen;
 
 use std::collections::HashSet;
 use std::error::Error;
@@ -212,4 +210,11 @@ pub fn codegen(
     }
 
     Ok(output)
+}
+
+pub trait CodeGeneratorFactory {
+    fn generator_name(&self) -> &'static str;
+    fn lang_ident(&self) -> &'static str;
+
+    fn create(&self) -> Box<dyn CodeGenerator>;
 }

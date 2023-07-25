@@ -6,16 +6,11 @@ edition = "2021"
 [dependencies]
 smallvec = "1.11.0"
 tracing = "0.1.37"
-
-pest = { version = "2.7.1", optional = true }
-pest_derive = { version = "2.7.1", optional = true }
-structopt = { version = "0.3", optional = true }
-tracing-subscriber = { version = "0.3.17", optional = true }
-
-[features]
-build-binary = ["pest", "pest_derive", "structopt", "tracing-subscriber"]
+pest = "2.7.1"
+pest_derive = "2.7.1"
+structopt = "0.3"
+tracing-subscriber = "0.3.17"
 
 [[bin]]
 name = "rsdl"
 path = "src/bin/main.rs"
-required-features = ["build-binary"]

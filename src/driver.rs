@@ -13,7 +13,7 @@ use crate::parser::treeconv::treeconv;
 use crate::preprocess::preprocess;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "rsdl", about = "Chuigda's Proprietary RSDL 优化编译器")]
+#[structopt(name = "rsdl", about = "RSDL 优化编译器")]
 struct Options {
     // -i, --input FILENAME
     #[structopt(short, long, parse(from_os_str))]
@@ -52,17 +52,17 @@ pub fn application_start(
         .map(|generator| generator.lang_ident())
         .collect::<HashSet<&'static str>>();
 
-    info!("Chuigda's Proprietary RSDL 优化编译器 v0.1.0");
     if let Some(build_info) = build_info {
+        info!("RSDL 优化编译器 - 非公开构建");
         info!("额外构建信息:");
         for line in build_info.split("\n") {
             info!("{}", line);
         }
-    }
 
-    info!("已加载的代码生成器:");
-    for generator_factory in generators.iter() {
-        info!("  - {}", generator_factory.generator_name());
+        info!("已加载的代码生成器:");
+        for generator_factory in generators.iter() {
+            info!("  - {}", generator_factory.generator_name());
+        }
     }
 
     let opt = Options::from_args();

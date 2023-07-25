@@ -170,6 +170,7 @@ pub fn application_start(
         .find(|generator| generator.lang_ident() == opt.mode.as_str())
         .unwrap();
 
+    info!("生成结构");
     let mut generator = generator_factory.create();
     if let Ok(output) = codegen(
         opt.namespace.as_ref().map(|s| s.as_str()),
@@ -178,9 +179,12 @@ pub fn application_start(
         generator.as_mut()
     ) {
         let output = output.join("\n");
+        let display_name = format!("{}", opt.output.display());
+        #[cfg(windows)] let display_name = display_name.replace("\\\\?\\", "");
 
+        info!("输出文件 {}", display_name);
         if let Err(e) = std::fs::write(&opt.output, output) {
-            error!("无法写入输出文件 {}: {}", opt.output.display(), e);
+            error!("无法写入输出文件 {}: {}", display_name, e);
         }
     }
 }

@@ -62,7 +62,11 @@ pub fn application_start(
 
         info!("已加载的代码生成器:");
         for generator_factory in generators.iter() {
-            info!("  - {}", generator_factory.generator_name());
+            info!(
+                "  {} -- {}",
+                generator_factory.lang_ident(),
+                generator_factory.generator_name()
+            );
         }
     }
 

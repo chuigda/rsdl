@@ -16,7 +16,6 @@ float = native(
 
 [private]
 [inline]
-[rust_skip]
 bool = native(
   rust => "bool",
   typescript => "boolean",

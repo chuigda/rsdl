@@ -1,11 +1,10 @@
 use rsdl::codegen::rustgen::RustGeneratorFactory;
+use rsdl::driver::REFERENTIAL_STDLIB;
 
 fn main() {
     rsdl::driver::application_start(
-        include_str!("../stdlib.rsdl"),
+        REFERENTIAL_STDLIB,
         None,
-        &[
-        &RustGeneratorFactory()
-        ]
+        &[&RustGeneratorFactory()]
     )
 }

@@ -189,3 +189,5 @@ pub fn application_start(
         }
     }
 }
+
+pub const REFERENTIAL_STDLIB: &'static str = include_str!("stdlib.rsdl");

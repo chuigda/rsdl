@@ -25,8 +25,10 @@ RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )
     在一些像 C++ 和 Rust 这样的值类型语言中，创建互递归的数据结构需要使用指针来
     引入间接性。boxed 用来建议生成器为指定的字段生成一个指针
   - [doc("docstring")] 或者 [doc = "docstring"]
-    要求生成器为指定的实体生成文档注释
+    建议生成器为指定的实体生成文档注释
   - [doc_ctor("docstring")] 或者 [doc_ctor = "docstring"]
-    在 SUM 类型中，要求生成器为指定的构造器对应生成的那个数据类型生成文档注释
+    在 SUM 类型中，建议生成器为指定的构造器对应生成的那个数据类型生成文档注释
   - [private]
-    要求生成器将指定的实体设为私有
+    建议生成器将指定的实体设为私有
+  - [inline]
+    对别名类型生效，建议生成器不生成别名类型，而是将被别名的类型放置在使用到别名的地方

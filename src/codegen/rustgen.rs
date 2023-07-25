@@ -3,27 +3,41 @@ use std::error::Error;
 use smallvec::SmallVec;
 
 use crate::{
-    codegen::CodeGenerator,
+    codegen::{
+        CodeGenerator,
+        CodeGeneratorFactory
+    },
     parser::hir::{
         SumType,
         RSDLType,
         AttrItem,
-        TypeConstructor, 
-        check_private,
+        TypeConstructor,
         check_boxed,
         check_ident_attr,
+        check_inline,
+        check_private,
         extract_doc_strings
     },
     min_resolv::ResolveContext
 };
-use crate::codegen::CodeGeneratorFactory;
 
 pub struct RustGenerator();
 
 impl RustGenerator {
-    fn type_to_string(&self, ty: &RSDLType) -> Option<String> {
+    fn type_to_string(&self, ctx: &ResolveContext, ty: &RSDLType) -> Option<String> {
         match ty {
-            RSDLType::Identifier(ident) => Some(ident.to_string()),
+            RSDLType::Identifier(ident) => {
+                if let Some((_, rsdl_type, is_inline)) = ctx.known_types.get(ident) {
+                    if *is_inline {
+                        let Some(rsdl_type) = rsdl_type else { return None; };
+                        self.type_to_string(ctx, rsdl_type)
+                    } else {
+                        Some(ident.to_string())
+                    }
+                } else {
+                    None
+                }
+            },
             RSDLType::Native(native) => {
                 if let Some(rust_name) = native.get(self.lang_ident()) {
                     Some(rust_name.to_string())
@@ -32,11 +46,11 @@ impl RustGenerator {
                 }
             },
             RSDLType::List(inner) => {
-                let inner = self.type_to_string(&inner)?;
+                let inner = self.type_to_string(ctx, &inner)?;
                 Some(format!("Vec<{}>", inner))
             },
             RSDLType::Record(inner) => {
-                let inner = self.type_to_string(&inner)?;
+                let inner = self.type_to_string(ctx, &inner)?;
                 Some(format!("HashMap<String, {}>", inner))
             }
         }
@@ -147,6 +161,7 @@ impl RustGenerator {
 
     fn imp_visit_simple_type(
         &mut self,
+        ctx: &ResolveContext,
         attr: &[AttrItem],
         type_ctor: &TypeConstructor,
         output: &mut Vec<String>,
@@ -176,10 +191,10 @@ impl RustGenerator {
             let field_boxed = check_boxed(attr);
 
             let inner_type = if field_boxed {
-                format!("Box<{}>", self.type_to_string(field_type)
+                format!("Box<{}>", self.type_to_string(ctx, field_type)
                     .ok_or("RSDL native 类型缺少对应的 Rust 类型")?)
             } else {
-                self.type_to_string(field_type)
+                self.type_to_string(ctx, field_type)
                     .ok_or("RSDL native 类型缺少对应的 Rust 类型")?
             };
 
@@ -291,13 +306,13 @@ impl CodeGenerator for RustGenerator {
 
     fn visit_type_alias(
         &mut self,
-        _ctx: &ResolveContext,
+        ctx: &ResolveContext,
         attr: &[AttrItem],
         alias_name: &str,
         target_type: &RSDLType,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
-        if self.check_rust_skip(attr) {
+        if check_inline(attr) || self.check_rust_skip(attr) {
             return Ok(());
         }
 
@@ -309,7 +324,7 @@ impl CodeGenerator for RustGenerator {
             "{}type {} = {};",
             if private { "" } else {"pub "},
             alias_name,
-            self.type_to_string(target_type)
+            self.type_to_string(ctx, target_type)
                 .ok_or("RSDL native 类型缺少对应的 Rust 类型")?
         ));
         output.push("".to_string());
@@ -319,12 +334,13 @@ impl CodeGenerator for RustGenerator {
 
     fn visit_simple_type(
         &mut self,
-        _ctx: &ResolveContext,
+        ctx: &ResolveContext,
         attr: &[AttrItem],
         type_ctor: &TypeConstructor,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
         self.imp_visit_simple_type(
+            ctx,
             attr,
             type_ctor,
             output,
@@ -335,13 +351,14 @@ impl CodeGenerator for RustGenerator {
 
     fn visit_sum_type_ctor(
         &mut self,
-        _ctx: &ResolveContext,
+        ctx: &ResolveContext,
         attr: &[AttrItem],
         ctor: &TypeConstructor,
         _sum_type: &SumType,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
         self.imp_visit_simple_type(
+            ctx,
             attr,
             ctor,
             output,

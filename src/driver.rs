@@ -37,6 +37,7 @@ struct Options {
 }
 
 pub fn application_start(
+    prebuilt_stdlib: &str,
     build_info: Option<&str>,
     generators: &[&dyn CodeGeneratorFactory]
 ) {
@@ -91,7 +92,7 @@ pub fn application_start(
 
         treeconv(&display_name, rsdl, &mut tydes);
     } else {
-        let rsdl = PestRSDLParser::parse(Rule::rsdl_program, include_str!("./stdlib.rsdl")).unwrap();
+        let rsdl = PestRSDLParser::parse(Rule::rsdl_program, prebuilt_stdlib).unwrap();
         treeconv("(stdlib)", rsdl, &mut tydes);
     }
 

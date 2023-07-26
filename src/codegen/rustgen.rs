@@ -174,8 +174,8 @@ impl RustGenerator {
         }
 
         self.gen_doc(attr, doc_attr_name, "", output)?;
-        self.gen_rust_attr(attr, rust_attr_name, "", output)?;
         self.gen_rust_derive(attr, output)?;
+        self.gen_rust_attr(attr, rust_attr_name, "", output)?;
         let private = check_private(attr);
 
         output.push(format!(
@@ -390,8 +390,8 @@ impl CodeGenerator for RustGenerator {
         }
 
         self.gen_doc(attr, "doc", "", output)?;
-        self.gen_rust_attr(attr, "rust_attr", "", output)?;
         self.gen_rust_derive(attr, output)?;
+        self.gen_rust_attr(attr, "rust_attr", "", output)?;
         let private = check_private(attr);
 
         output.push(format!(

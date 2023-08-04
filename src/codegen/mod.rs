@@ -122,6 +122,17 @@ pub fn codegen(
             })?;
     }
 
+    codegen.visit_all_typedefs(ctx, tyde, &mut output)
+        .map_err(|err| {
+            error!(
+                "{}: 生成文件 {} 时遇到错误: {}",
+                codegen.generator_name(),
+                tyde[0].file,
+                err
+            );
+            err
+        })?;
+
     for d in tyde {
         match &d.inner {
             TypeDefInner::AliasType(name, aliased) => {

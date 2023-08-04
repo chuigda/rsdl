@@ -1,0 +1,12 @@
+[inline]
+Int64 = native(
+     rust => "i64",
+     cxx => "int64_t",
+     ts => "bigint"
+)
+
+[rust_derive(Serialize, Deserialize, Debug, Clone)]
+[rust_attr(nonexhaustive)]
+Type : FuncType(params: list<Type>, ret: list<Type>)
+     | IntType(bits: Int64)
+     | StringType

@@ -74,6 +74,16 @@ pub trait CodeGenerator {
         sum_type: &SumType,
         output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>>;
+
+    // downstream codegen may overwrite this, or just ignore it
+    fn visit_all_typedefs(
+        &mut self,
+        _ctx: &ResolveContext,
+        _typedefs: &[TypeDef],
+        _output: &mut Vec<String>
+    ) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
 }
 
 pub fn codegen(

@@ -163,6 +163,7 @@ impl RustGenerator {
         &mut self,
         ctx: &ResolveContext,
         attr: &[AttrItem],
+        sum_type_attr: Option<&[AttrItem]>,
         type_ctor: &TypeConstructor,
         output: &mut Vec<String>,
 
@@ -175,6 +176,9 @@ impl RustGenerator {
 
         self.gen_doc(attr, doc_attr_name, "", output)?;
         self.gen_rust_derive(attr, output)?;
+        if let Some(sum_type_attr) = sum_type_attr {
+            self.gen_rust_derive(sum_type_attr, output)?;
+        }
         self.gen_rust_attr(attr, rust_attr_name, "", output)?;
         let private = check_private(attr);
 
@@ -342,6 +346,7 @@ impl CodeGenerator for RustGenerator {
         self.imp_visit_simple_type(
             ctx,
             attr,
+            None,
             type_ctor,
             output,
             "doc",
@@ -351,20 +356,13 @@ impl CodeGenerator for RustGenerator {
 
     fn visit_sum_type_ctor(
         &mut self,
-        ctx: &ResolveContext,
-        attr: &[AttrItem],
-        ctor: &TypeConstructor,
+        _ctx: &ResolveContext,
+        _attr: &[AttrItem],
+        _ctor: &TypeConstructor,
         _sum_type: &SumType,
-        output: &mut Vec<String>
+        _output: &mut Vec<String>
     ) -> Result<(), Box<dyn Error>> {
-        self.imp_visit_simple_type(
-            ctx,
-            attr,
-            ctor,
-            output,
-            "doc_ctor",
-            "rust_attr_ctor"
-        )
+        Ok(())
     }
 
     fn visit_sum_type_scalar_variant(
@@ -380,7 +378,7 @@ impl CodeGenerator for RustGenerator {
 
     fn visit_sum_type(
         &mut self,
-        _ctx: &ResolveContext,
+        ctx: &ResolveContext,
         attr: &[AttrItem],
         sum_type: &SumType,
         output: &mut Vec<String>
@@ -423,6 +421,18 @@ impl CodeGenerator for RustGenerator {
 
         output.push("}".to_string());
         output.push("".to_string());
+
+        for (ctor_attr, ctor) in &sum_type.ctors {
+            self.imp_visit_simple_type(
+                ctx,
+                ctor_attr,
+                Some(attr),
+                ctor,
+                output,
+                "doc_ctor",
+                "rust_attr_ctor"
+            )?;
+        }
 
         Ok(())
     }

@@ -4,7 +4,7 @@ StudentInfo(
     [doc("学号")]
     id: int,
     [doc("姓名")]
-    name: str,
+    name?: str,
     [doc("选课")]
     course: list<Course>,
     [doc("成绩")]

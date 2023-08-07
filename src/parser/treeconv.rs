@@ -195,7 +195,7 @@ fn fldconv(fld: Pair<Rule>) -> (SmallVec<[AttrItem; 2]>, bool, RSDLType, String)
 
     let optional_mark = iter.next().unwrap();
     assert_eq!(optional_mark.as_rule(), Rule::optional_mark);
-    let is_optional = optional_mark.into_inner().next().is_some();
+    let is_optional = optional_mark.as_span().as_str().trim() == "?";
 
     let rsdl_type = convrsdltype(iter.next().unwrap());
 

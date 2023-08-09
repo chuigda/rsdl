@@ -412,11 +412,19 @@ impl CodeGenerator for RustGenerator {
             self.gen_doc(ctor_attr, "doc", "    ", output)?;
             self.gen_rust_attr(ctor_attr, "rust_attr", "    ", output)?;
 
-            output.push(format!(
-                "    {}({}),",
-                ctor.name,
-                ctor.name
-            ));
+            if check_boxed(&ctor_attr) {
+                output.push(format!(
+                    "    {}(Box<{}>),",
+                    ctor.name,
+                    ctor.name
+                ));
+            } else {
+                output.push(format!(
+                    "    {}({}),",
+                    ctor.name,
+                    ctor.name
+                ));
+            }
         }
 
         output.push("}".to_string());

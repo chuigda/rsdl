@@ -1,0 +1,12 @@
+[inline] Expr = native(rust => "Expr")
+[inline] Decl = native(rust => "Decl")
+
+[rust_derive(Copy, Clone, Debug, Serialize, Deserialize)]
+[rust_attr(serde(tag = "$kind"))]
+Stmt : [boxed] IfStmt(
+         cond: Expr,
+         then: Stmt,
+         otherwise: Stmt
+        )
+     | [boxed] ExprStmt(expr: Expr)
+     | [boxed] BlockStmt(stmts: list<Stmt>)

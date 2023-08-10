@@ -33,7 +33,11 @@ struct Options {
 
     // --stdlib STDLIB
     #[structopt(long, parse(from_os_str))]
-    stdlib: Option<PathBuf>
+    stdlib: Option<PathBuf>,
+
+    // -d, --discriminant DISCRIMINANT
+    #[structopt(short = "d", long = "discriminant", default_value = "$kind")]
+    discriminant: String,
 }
 
 pub fn application_start(
@@ -156,7 +160,7 @@ pub fn application_start(
         treeconv(&display_name, rsdl, &mut tydes);
     }
 
-    let mut resolve_ctx = ResolveContext::new();
+    let mut resolve_ctx = ResolveContext::new(opt.discriminant);
 
     for tyde in tydes.iter() {
         if resolve_ctx.min_resolv(tyde).is_err() {

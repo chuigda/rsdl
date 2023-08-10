@@ -4,14 +4,17 @@ use tracing::error;
 
 use crate::parser::hir::{check_inline, RSDLType, TypeDef, TypeDefInner};
 
-#[derive(Default)]
 pub struct ResolveContext {
+    pub discriminant: String,
     pub known_types: HashMap<String, (String, Option<RSDLType>, bool)>
 }
 
 impl ResolveContext {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(discriminant: impl ToString) -> Self {
+        Self {
+            discriminant: discriminant.to_string(),
+            known_types: HashMap::new()
+        }
     }
 
     pub fn min_resolv(&mut self, tyde: &TypeDef) -> Result<(), ()> {

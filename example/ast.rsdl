@@ -10,3 +10,6 @@ Stmt : [boxed] IfStmt(
         )
      | [boxed] ExprStmt(expr: Expr)
      | [boxed] BlockStmt(stmts: list<Stmt>)
+     -- The following line would fail compilation on Rust target, because
+     -- `fn` is a reserved keyword in Rust.
+     -- | [boxed] FnCallStmt(fn: Expr, args: list<Expr>)

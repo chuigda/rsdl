@@ -3,6 +3,7 @@ pub mod rustgen;
 use std::collections::HashSet;
 use std::error::Error;
 use std::ops::Deref;
+
 use tracing::error;
 
 use crate::min_resolv::ResolveContext;
@@ -92,23 +93,12 @@ pub fn codegen(
     ctx: &ResolveContext,
     codegen: &mut dyn CodeGenerator
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let reserved_idents = codegen.reserved_idents()
-        .into_iter()
-        .map(Deref::deref)
-        .collect::<HashSet<_>>();
-    for (ty_name, (exist_in_file, _, _)) in ctx.known_types.iter() {
-        if reserved_idents.contains(ty_name.as_str()) {
-            return Err(format!(
-                "{}: 生成器报告文件 {} 中的类型名 {} 与保留标识符冲突",
-                codegen.generator_name(),
-                exist_in_file,
-                ty_name
-            ).into());
-        }
+    if let Err(e) = check_reserved_idents(ctx, codegen, namespace, tyde) {
+        error!("{e}");
+        return Err(e);
     }
 
     let mut output = Vec::new();
-
     if let Some(namespace) = namespace {
         codegen.visit_namespace_begin(namespace, &mut output)
             .map_err(|err| {
@@ -231,6 +221,76 @@ pub fn codegen(
     }
 
     Ok(output)
+}
+
+fn check_reserved_idents(
+    ctx: &ResolveContext,
+    codegen: &dyn CodeGenerator,
+    namespace: Option<&str>,
+    tyde: &[TypeDef]
+) -> Result<(), Box<dyn Error>> {
+    let reserved_idents = codegen.reserved_idents()
+        .into_iter()
+        .map(Deref::deref)
+        .collect::<HashSet<_>>();
+
+    if let Some(namespace) = namespace {
+        if reserved_idents.contains(namespace) {
+            return Err(format!(
+                "{}: 生成器报告命名空间名称 {} 与保留标识符冲突",
+                codegen.generator_name(),
+                namespace
+            ).into());
+        }
+    }
+
+    for (ty_name, (exist_in_file, _, is_inline)) in ctx.known_types.iter() {
+        if reserved_idents.contains(ty_name.as_str()) && !is_inline {
+            return Err(format!(
+                "{}: 生成器报告文件 {} 中的非内联类型 {} 与保留标识符冲突",
+                codegen.generator_name(),
+                exist_in_file,
+                ty_name
+            ).into());
+        }
+    }
+
+    for tyde in tyde {
+        match &tyde.inner {
+            TypeDefInner::SimpleType(simple_type) => {
+                for (_, _, _, field_name) in &simple_type.fields {
+                    if reserved_idents.contains(field_name.as_str()) {
+                        return Err(format!(
+                            "{}: 生成器报告文件 {} 中的简单类型 {} 的字段 {} 与保留标识符冲突",
+                            codegen.generator_name(),
+                            tyde.file,
+                            simple_type.name,
+                            field_name
+                        ).into());
+                    }
+                }
+            },
+            TypeDefInner::SumType(sum_type) => {
+                for (_, ctor) in &sum_type.ctors {
+                    for (_, _, _, field_name) in &ctor.fields {
+                        if reserved_idents.contains(field_name.as_str()) {
+                            return Err(format!(
+                                "{}: 生成器报告文件 {} 中的和类型 {} 的构造函数 {} 的字段 {} 与保留标识符冲突",
+                                codegen.generator_name(),
+                                tyde.file,
+                                sum_type.name,
+                                ctor.name,
+                                field_name
+                            ).into());
+                        }
+                    }
+                }
+            },
+            _ => {}
+        }
+    }
+
+    Ok(())
 }
 
 pub trait CodeGeneratorFactory {

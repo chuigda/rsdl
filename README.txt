@@ -33,3 +33,10 @@ RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )
     建议生成器将指定的实体设为私有
   - [inline]
     对别名类型生效，建议生成器不生成别名类型，而是将被别名的类型放置在使用到别名的地方
+
+Rust 后端支持的注解
+  - [rust_derive(traits)]
+    为类型派生指定的 traits，traits 之间用逗号分隔
+    如果对 SUM 类型使用，每个 enum variant 对应的 struct 类型都会被派生指定的 traits
+  - [rust_attr(attributes)]
+    为类型或者字段添加指定的 Rust attribute，attribute 语法和 Rust 总体上一致

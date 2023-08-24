@@ -75,8 +75,14 @@ impl TSInterfaceGenerator {
             return Ok(());
         }
 
-        for line in doc_string_lines {
-            output.push_string(format!("/// {}", line));
+        if doc_string_lines.len() == 1 {
+            output.push_string(format!("/** {} */", doc_string_lines[0]));
+        } else {
+            output.push_str("/**");
+            for line in doc_string_lines {
+                output.push_string(format!(" * {}", line));
+            }
+            output.push_str(" */");
         }
 
         Ok(())

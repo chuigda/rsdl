@@ -10,10 +10,9 @@ RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )
   - Rust (by @NEETovo)
 
 计划支持的后端有:
-  - TypeScript (class-based) + custom deserialization
-  - TypeScript (interface-based) + typeAssert
+  - TypeScript (interface-based)
+  - typeAssert
   - C++ + Qt + QtJSON
-  - Julia
 
 ----
 

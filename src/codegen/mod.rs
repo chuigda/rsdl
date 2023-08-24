@@ -16,6 +16,90 @@ use crate::parser::hir::{
     TypeDefInner
 };
 
+#[derive(Debug)]
+pub struct Doc {
+    pub(crate) indent: u32,
+    pub(crate) items: Vec<DocItem>
+}
+
+impl Doc {
+    pub fn new(indent: u32) -> Self {
+        Self {
+            indent,
+            items: Vec::new()
+        }
+    }
+
+    pub fn push(&mut self, item: DocItem) -> &mut Self {
+        self.items.push(item);
+        self
+    }
+
+    pub fn push_doc(&mut self, doc: Box<Doc>) -> &mut Self {
+        self.items.push(DocItem::DocBlock(doc));
+        self
+    }
+
+    pub fn push_str(&mut self, s: &'static str) -> &mut Self {
+        self.items.push(DocItem::TextLiteral(s));
+        self
+    }
+
+    pub fn push_string(&mut self, s: String) -> &mut Self {
+        self.items.push(DocItem::Text(s));
+        self
+    }
+
+    pub fn push_empty_line(&mut self) -> &mut Self {
+        self.items.push(DocItem::EmptyLine);
+        self
+    }
+}
+
+impl ToString for Doc {
+    fn to_string(&self) -> String {
+        let mut buf = String::new();
+        doc_to_string_impl(&mut buf, self.indent, self);
+        buf
+    }
+}
+
+fn doc_to_string_impl(buf: &mut String, indent: u32, doc: &Doc) {
+    let indent_str = " ".repeat(indent as usize);
+
+    for (idx, item) in doc.items.iter().enumerate() {
+        match item {
+            DocItem::Text(s) => {
+                buf.push_str(&indent_str);
+                buf.push_str(s);
+                buf.push_str("\n");
+            },
+            DocItem::TextLiteral(s) => {
+                buf.push_str(&indent_str);
+                buf.push_str(s);
+                buf.push_str("\n");
+            },
+            DocItem::EmptyLine => {
+                if idx + 1 == doc.items.len() {
+                    continue;
+                }
+                buf.push('\n');
+            },
+            DocItem::DocBlock(doc) => {
+                doc_to_string_impl(buf, indent + doc.indent, doc);
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum DocItem {
+    Text(String),
+    TextLiteral(&'static str),
+    EmptyLine,
+    DocBlock(Box<Doc>),
+}
+
 pub trait CodeGenerator {
     fn generator_name(&self) -> &'static str;
     fn lang_ident(&self) -> &'static str;
@@ -24,13 +108,13 @@ pub trait CodeGenerator {
     fn visit_namespace_begin(
         &mut self,
         namespace: &str,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     fn visit_namespace_end(
         &mut self,
         namespace: &str,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     fn visit_type_alias(
@@ -39,7 +123,7 @@ pub trait CodeGenerator {
         attr: &[AttrItem],
         alias_name: &str,
         target_type: &RSDLType,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     fn visit_simple_type(
@@ -47,7 +131,7 @@ pub trait CodeGenerator {
         ctx: &ResolveContext,
         attr: &[AttrItem],
         type_ctor: &TypeConstructor,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     fn visit_sum_type_ctor(
@@ -56,7 +140,7 @@ pub trait CodeGenerator {
         attr: &[AttrItem],
         ctor: &TypeConstructor,
         sum_type: &SumType,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     fn visit_sum_type_scalar_variant(
@@ -65,7 +149,7 @@ pub trait CodeGenerator {
         attr: &[AttrItem],
         variant_name: &str,
         sum_type: &SumType,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     fn visit_sum_type(
@@ -73,7 +157,7 @@ pub trait CodeGenerator {
         ctx: &ResolveContext,
         attr: &[AttrItem],
         sum_type: &SumType,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>>;
 
     // downstream codegen may overwrite this, or just ignore it
@@ -81,7 +165,7 @@ pub trait CodeGenerator {
         &mut self,
         _ctx: &ResolveContext,
         _typedefs: &[TypeDef],
-        _output: &mut Vec<String>
+        _output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
@@ -92,13 +176,13 @@ pub fn codegen(
     tyde: &[TypeDef],
     ctx: &ResolveContext,
     codegen: &mut dyn CodeGenerator
-) -> Result<Vec<String>, Box<dyn Error>> {
+) -> Result<Doc, Box<dyn Error>> {
     if let Err(e) = check_reserved_idents(ctx, codegen, namespace, tyde) {
         error!("{e}");
         return Err(e);
     }
 
-    let mut output = Vec::new();
+    let mut output = Doc::new(0);
     if let Some(namespace) = namespace {
         codegen.visit_namespace_begin(namespace, &mut output)
             .map_err(|err| {

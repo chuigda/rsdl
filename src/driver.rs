@@ -187,7 +187,7 @@ pub fn application_start(
         &resolve_ctx,
         generator.as_mut()
     ) {
-        let output = output.join("\n");
+        let output = output.to_string();
         let display_name = format!("{}", opt.output.display());
         #[cfg(windows)] let display_name = display_name.replace("\\\\?\\", "");
 

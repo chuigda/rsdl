@@ -5,7 +5,8 @@ use smallvec::SmallVec;
 use crate::{
     codegen::{
         CodeGenerator,
-        CodeGeneratorFactory
+        CodeGeneratorFactory,
+        Doc
     },
     parser::hir::{
         SumType,
@@ -59,7 +60,7 @@ impl RustGenerator {
     fn gen_rust_derive(
         &self,
         attr_list: &[AttrItem],
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         for attr in attr_list {
             let mut derived_names: SmallVec<[&str; 2]> = SmallVec::new();
@@ -74,7 +75,7 @@ impl RustGenerator {
                     }
 
                     if !derived_names.is_empty() {
-                        output.push(format!("#[derive({})]", derived_names.join(", ")));
+                        output.push_string(format!("#[derive({})]", derived_names.join(", ")));
                     }
                 }
             }
@@ -91,17 +92,15 @@ impl RustGenerator {
         &self,
         attr_list: &[AttrItem],
         rust_attr_name: &str,
-        indent: &str,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         for attr in attr_list {
             match attr {
                 AttrItem::CallAlike(fn_alike, param_alike) => {
                     if fn_alike == rust_attr_name {
                         for rust_attr in param_alike {
-                            output.push(format!(
-                                "{}#[{}]",
-                                indent,
+                            output.push_string(format!(
+                                "#[{}]",
                                 self.gen_single_rust_attr(rust_attr)?
                             ));
                         }
@@ -144,8 +143,7 @@ impl RustGenerator {
         &self,
         attr_list: &[AttrItem],
         doc_attr_name: &str,
-        indent: &str,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         let doc_string_lines = extract_doc_strings(attr_list, doc_attr_name)?;
         if doc_string_lines.is_empty() {
@@ -153,7 +151,7 @@ impl RustGenerator {
         }
 
         for line in doc_string_lines {
-            output.push(format!("{}/// {}", indent, line));
+            output.push_string(format!("/// {}", line));
         }
 
         Ok(())
@@ -165,7 +163,7 @@ impl RustGenerator {
         attr: &[AttrItem],
         sum_type_attr: Option<&[AttrItem]>,
         type_ctor: &TypeConstructor,
-        output: &mut Vec<String>,
+        output: &mut Doc,
 
         doc_attr_name: &str,
         rust_attr_name: &str
@@ -174,23 +172,25 @@ impl RustGenerator {
             return Ok(());
         }
 
-        self.gen_doc(attr, doc_attr_name, "", output)?;
+        self.gen_doc(attr, doc_attr_name, output)?;
         self.gen_rust_derive(attr, output)?;
         if let Some(sum_type_attr) = sum_type_attr {
             self.gen_rust_derive(sum_type_attr, output)?;
         }
-        self.gen_rust_attr(attr, rust_attr_name, "", output)?;
+        self.gen_rust_attr(attr, rust_attr_name, output)?;
         let private = check_private(attr);
 
-        output.push(format!(
+        output.push_string(format!(
             "{}struct {} {{",
             if private { "" } else { "pub " },
             type_ctor.name
         ));
 
+        let mut struct_fields = Box::new(Doc::new(4));
+
         for (attr, optional, field_type, field_name) in &type_ctor.fields {
-            self.gen_doc(attr, "doc", "    ", output)?;
-            self.gen_rust_attr(attr, "rust_attr", "    ", output)?;
+            self.gen_doc(attr, "doc", &mut struct_fields)?;
+            self.gen_rust_attr(attr, "rust_attr", &mut struct_fields)?;
             let field_private = check_private(attr);
             let field_boxed = check_boxed(attr);
 
@@ -203,15 +203,15 @@ impl RustGenerator {
             };
 
             if *optional {
-                output.push(format!(
-                    "    {}{}: Option<{}>,",
+                struct_fields.push_string(format!(
+                    "{}{}: Option<{}>,",
                     if field_private { "" } else { "pub " },
                     field_name,
                     inner_type
                 ));
             } else {
-                output.push(format!(
-                    "    {}{}: {},",
+                struct_fields.push_string(format!(
+                    "{}{}: {},",
                     if field_private { "" } else { "pub " },
                     field_name,
                     inner_type
@@ -219,8 +219,10 @@ impl RustGenerator {
             }
         }
 
-        output.push("}".to_string());
-        output.push("".to_string());
+        output.push_doc(struct_fields);
+
+        output.push_str("}");
+        output.push_empty_line();
 
         Ok(())
     }
@@ -293,18 +295,18 @@ impl CodeGenerator for RustGenerator {
     fn visit_namespace_begin(
         &mut self,
         namespace: &str,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
-        output.push(format!("pub mod {} {{", namespace));
+        output.push_string(format!("mod {} {{", namespace));
         Ok(())
     }
 
     fn visit_namespace_end(
         &mut self,
-        namespace: &str,
-        output: &mut Vec<String>
+        _namespace: &str,
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
-        output.push(format!("}} // mod {}", namespace));
+        output.push_str("}");
         Ok(())
     }
 
@@ -314,24 +316,24 @@ impl CodeGenerator for RustGenerator {
         attr: &[AttrItem],
         alias_name: &str,
         target_type: &RSDLType,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         if check_inline(attr) || self.check_rust_skip(attr) {
             return Ok(());
         }
 
-        self.gen_doc(attr, "doc", "", output)?;
-        self.gen_rust_attr(attr, "rust_attr", "", output)?;
+        self.gen_doc(attr, "doc", output)?;
+        self.gen_rust_attr(attr, "rust_attr", output)?;
         let private = check_private(attr);
 
-        output.push(format!(
+        output.push_string(format!(
             "{}type {} = {};",
             if private { "" } else {"pub "},
             alias_name,
             self.type_to_string(ctx, target_type)
                 .ok_or("RSDL native 类型缺少对应的 Rust 类型")?
         ));
-        output.push("".to_string());
+        output.push_empty_line();
 
         Ok(())
     }
@@ -341,7 +343,7 @@ impl CodeGenerator for RustGenerator {
         ctx: &ResolveContext,
         attr: &[AttrItem],
         type_ctor: &TypeConstructor,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         self.imp_visit_simple_type(
             ctx,
@@ -360,7 +362,7 @@ impl CodeGenerator for RustGenerator {
         _attr: &[AttrItem],
         _ctor: &TypeConstructor,
         _sum_type: &SumType,
-        _output: &mut Vec<String>
+        _output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
@@ -371,7 +373,7 @@ impl CodeGenerator for RustGenerator {
         _attr: &[AttrItem],
         _variant_name: &str,
         _sum_type: &SumType,
-        _output: &mut Vec<String>
+        _output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
@@ -381,54 +383,58 @@ impl CodeGenerator for RustGenerator {
         ctx: &ResolveContext,
         attr: &[AttrItem],
         sum_type: &SumType,
-        output: &mut Vec<String>
+        output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         if self.check_rust_skip(attr) {
             return Ok(());
         }
 
-        self.gen_doc(attr, "doc", "", output)?;
+        self.gen_doc(attr, "doc", output)?;
         self.gen_rust_derive(attr, output)?;
-        self.gen_rust_attr(attr, "rust_attr", "", output)?;
+        self.gen_rust_attr(attr, "rust_attr", output)?;
         let private = check_private(attr);
 
-        output.push(format!(
+        output.push_string(format!(
             "{}enum {} {{",
             if private { "" } else { "pub " },
             sum_type.name
         ));
 
-        for (variant_attr, variant) in &sum_type.scalar_variants {
-            self.gen_doc(variant_attr, "doc", "    ", output)?;
-            self.gen_rust_attr(variant_attr, "rust_attr", "    ", output)?;
+        let mut enum_variants = Box::new(Doc::new(4));
 
-            output.push(format!(
-                "    {},",
+        for (variant_attr, variant) in &sum_type.scalar_variants {
+            self.gen_doc(variant_attr, "doc", &mut enum_variants)?;
+            self.gen_rust_attr(variant_attr, "rust_attr", &mut enum_variants)?;
+
+            enum_variants.push_string(format!(
+                "{},",
                 variant
             ));
         }
 
         for (ctor_attr, ctor) in &sum_type.ctors {
-            self.gen_doc(ctor_attr, "doc", "    ", output)?;
-            self.gen_rust_attr(ctor_attr, "rust_attr", "    ", output)?;
+            self.gen_doc(ctor_attr, "doc", &mut enum_variants)?;
+            self.gen_rust_attr(ctor_attr, "rust_attr", &mut enum_variants)?;
 
             if check_boxed(&ctor_attr) {
-                output.push(format!(
-                    "    {}(Box<{}>),",
+                enum_variants.push_string(format!(
+                    "{}(Box<{}>),",
                     ctor.name,
                     ctor.name
                 ));
             } else {
-                output.push(format!(
-                    "    {}({}),",
+                enum_variants.push_string(format!(
+                    "{}({}),",
                     ctor.name,
                     ctor.name
                 ));
             }
         }
 
-        output.push("}".to_string());
-        output.push("".to_string());
+        output.push_doc(enum_variants);
+
+        output.push_str("}");
+        output.push_empty_line();
 
         for (ctor_attr, ctor) in &sum_type.ctors {
             self.imp_visit_simple_type(

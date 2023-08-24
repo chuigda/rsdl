@@ -1,4 +1,5 @@
 pub mod rustgen;
+pub mod tsgen;
 
 use std::collections::HashSet;
 use std::error::Error;

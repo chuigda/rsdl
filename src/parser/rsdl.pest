@@ -54,4 +54,6 @@ attr = { "[" ~ attr_item ~ "]" }
 
 type_def = { attr* ~ (type_ctor | sum_type | type_alias) }
 
-rsdl_program = { SOI ~ type_def* ~ EOI }
+global_attr = { "[" ~ "[" ~ attr_item ~ "]" ~ "]" }
+
+rsdl_program = { SOI ~ (global_attr | type_def)* ~ EOI }

@@ -81,6 +81,7 @@ pub fn application_start(
         return;
     }
 
+    let mut global_attr = Vec::new();
     let mut tydes = Vec::new();
     if let Some(stdlib) = opt.stdlib {
         let display_name = format!("{}", stdlib.display());
@@ -98,10 +99,10 @@ pub fn application_start(
             }
         };
 
-        treeconv(&display_name, rsdl, &mut tydes);
+        treeconv(&display_name, rsdl, &mut global_attr, &mut tydes);
     } else {
         let rsdl = PestRSDLParser::parse(Rule::rsdl_program, prebuilt_stdlib).unwrap();
-        treeconv("(stdlib)", rsdl, &mut tydes);
+        treeconv("(stdlib)", rsdl, &mut global_attr, &mut tydes);
     }
 
     let mut preprocessed_files = HashSet::new();
@@ -157,10 +158,10 @@ pub fn application_start(
             }
         };
 
-        treeconv(&display_name, rsdl, &mut tydes);
+        treeconv(&display_name, rsdl, &mut global_attr, &mut tydes);
     }
 
-    let mut resolve_ctx = ResolveContext::new(opt.discriminant);
+    let mut resolve_ctx = ResolveContext::new(global_attr, opt.discriminant);
 
     for tyde in tydes.iter() {
         if resolve_ctx.min_resolv(tyde).is_err() {

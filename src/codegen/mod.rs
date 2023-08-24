@@ -169,6 +169,15 @@ pub trait CodeGenerator {
     ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
+
+    // downstream codegen may overwrite this, or just ignore it
+    fn pre_visit(
+        &mut self,
+        _ctx: &ResolveContext,
+        _output: &mut Doc
+    ) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
 }
 
 pub fn codegen(
@@ -183,6 +192,8 @@ pub fn codegen(
     }
 
     let mut output = Doc::new(0);
+    codegen.pre_visit(ctx, &mut output)?;
+
     if let Some(namespace) = namespace {
         codegen.visit_namespace_begin(namespace, &mut output)
             .map_err(|err| {

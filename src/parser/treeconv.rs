@@ -13,7 +13,7 @@ use crate::parser::hir::{
 use crate::parser::pest_parser::Rule;
 
 
-pub fn treeconv(file_name: &str, mut tree: Pairs<Rule>, output: &mut Vec<TypeDef>) {
+pub fn treeconv(file_name: &str, mut tree: Pairs<Rule>, global_attr: &mut Vec<AttrItem>, defs: &mut Vec<TypeDef>) {
     let rsdl_program = tree
         .next()
         .unwrap();
@@ -22,7 +22,8 @@ pub fn treeconv(file_name: &str, mut tree: Pairs<Rule>, output: &mut Vec<TypeDef
 
     for rsdl_item in rsdl_program.into_inner() {
         match rsdl_item.as_rule() {
-            Rule::type_def => output.push(tydeconv(file_name, rsdl_item)),
+            Rule::type_def => defs.push(tydeconv(file_name, rsdl_item)),
+            Rule::global_attr => global_attr.push(attrconv(rsdl_item)),
             Rule::EOI => {},
             _ => unreachable!()
         }

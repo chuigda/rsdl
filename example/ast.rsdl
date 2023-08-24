@@ -1,3 +1,5 @@
+[[global_attr]]
+
 [rust_derive(Copy, Clone, Debug, Serialize, Deserialize)]
 [rust_attr(serde(tag = "$kind"))]
 [doc = "A program is a list of statements"]

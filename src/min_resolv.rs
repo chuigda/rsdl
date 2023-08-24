@@ -2,16 +2,18 @@ use std::collections::HashMap;
 
 use tracing::error;
 
-use crate::parser::hir::{check_inline, RSDLType, TypeDef, TypeDefInner};
+use crate::parser::hir::{check_inline, RSDLType, TypeDef, TypeDefInner, AttrItem};
 
 pub struct ResolveContext {
+    pub global_attr: Vec<AttrItem>,
     pub discriminant: String,
     pub known_types: HashMap<String, (String, Option<RSDLType>, bool)>
 }
 
 impl ResolveContext {
-    pub fn new(discriminant: impl ToString) -> Self {
+    pub fn new(global_attr: Vec<AttrItem>, discriminant: impl ToString) -> Self {
         Self {
+            global_attr,
             discriminant: discriminant.to_string(),
             known_types: HashMap::new()
         }

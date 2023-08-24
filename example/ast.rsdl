@@ -1,15 +1,46 @@
-[inline] Expr = native(rust => "Expr")
-[inline] Decl = native(rust => "Decl")
+[rust_derive(Copy, Clone, Debug, Serialize, Deserialize)]
+[rust_attr(serde(tag = "$kind"))]
+[doc = "A program is a list of statements"]
+Stmt : [doc = "if-then-else statement"] 
+       [boxed]
+       IfStmt(
+         [doc = "if condition"]
+         cond: Expr,
+         [doc = "then statement"]
+         then: Stmt,
+         [doc = "else statement, can be empty"]
+         otherwise?: Stmt
+       )
+     | [doc = "an expression is also sometimes considered a statement"]
+       [boxed]
+       ExprStmt(expr: Expr)
+     | [doc = "a block is a list of statements"]
+       [boxed]
+       BlockStmt(stmts: list<Stmt>)
 
 [rust_derive(Copy, Clone, Debug, Serialize, Deserialize)]
 [rust_attr(serde(tag = "$kind"))]
-Stmt : [boxed] IfStmt(
-         cond: Expr,
-         then: Stmt,
-         otherwise: Stmt
-        )
-     | [boxed] ExprStmt(expr: Expr)
-     | [boxed] BlockStmt(stmts: list<Stmt>)
-     -- The following line would fail compilation on Rust target, because
-     -- `fn` is a reserved keyword in Rust.
-     -- | [boxed] FnCallStmt(fn: Expr, args: list<Expr>)
+[doc = "An expression is a literal, an identifier, or a binary expression"]
+Expr : [doc = "numeric literal expression"]
+       NumericLiteral(value: int)
+     | [doc = "string literal expression"]
+       StringLiteral(value: str)
+     | [doc = "boolean literal expression"]
+       BoolLiteral(value: bool)
+     | [doc = "identifier expression"]
+       Identifier(name: str)
+     | [doc = "binary expression"]
+       [boxed]
+       BinaryExpr(
+         [doc = "binary operator"]
+         op: str,
+         [doc = "left operand"]
+         left: Expr,
+         [doc = "right operand"]
+         right: Expr
+       )
+     -- the following line won't compile with Rust target, because `fn` is 
+     -- a keyword in Rust
+     -- | [doc = "function call expression"]
+     --   [boxed]
+     --   CallExpr(fn: Expr, args: list<Expr>)

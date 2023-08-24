@@ -27,6 +27,8 @@ RSDL 基于 Zephyr ASDL (https://www.cs.princeton.edu/~appel/papers/asdl97.pdf )
     建议生成器为指定的实体生成文档注释
   - [doc_ctor("docstring")] 或者 [doc_ctor = "docstring"]
     在 SUM 类型中，建议生成器为指定的构造器对应生成的那个数据类型生成文档注释
+    例如对于 Rust 目标，构造器上用 doc 指定的注释会被放置在对应的 enum variant 上
+    而用 doc_ctor 指定的注释会被放置在为这个 enum variant 生成的 struct 类型上
   - [private]
     建议生成器将指定的实体设为私有
   - [inline]

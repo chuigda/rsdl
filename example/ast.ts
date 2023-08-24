@@ -28,7 +28,14 @@ export interface BlockStmt extends StmtBase<"BlockStmt"> {
     stmts: Stmt[],
 }
 
-/** An expression is a literal, an identifier, or a binary expression */
+/**
+ * An expression is a literal, an identifier, or a binary expression
+ * 
+ * All I want is a room somewhere,
+ * Far away from the cold night air,
+ * With one enormous chair,
+ * Aow, wouldn't it be loverly?
+ */
 export type Expr = 
     | NumericLiteral
     | StringLiteral

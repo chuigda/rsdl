@@ -31,6 +31,11 @@ pub struct BlockStmt {
 }
 
 /// An expression is a literal, an identifier, or a binary expression
+/// 
+/// All I want is a room somewhere,
+/// Far away from the cold night air,
+/// With one enormous chair,
+/// Aow, wouldn't it be loverly?
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "$kind")]
 pub enum Expr {

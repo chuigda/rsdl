@@ -100,7 +100,7 @@ impl TSInterfaceGenerator {
 
         if let Some(parent) = parent {
             output.push_string(format!(
-                "{}interface {} extends {}Base<\"{}\">{{",
+                "{}interface {} extends {}Base<\"{}\"> {{",
                 if private { "" } else { "export " },
                 type_ctor.name,
                 parent,

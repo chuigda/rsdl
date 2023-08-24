@@ -9,7 +9,7 @@ export interface StmtBase<K extends string> {
 }
 
 /// if-then-else statement
-export interface IfStmt extends StmtBase<"IfStmt">{
+export interface IfStmt extends StmtBase<"IfStmt"> {
     /// if condition
     cond: Expr,
     /// then statement
@@ -19,12 +19,12 @@ export interface IfStmt extends StmtBase<"IfStmt">{
 }
 
 /// an expression is also sometimes considered a statement
-export interface ExprStmt extends StmtBase<"ExprStmt">{
+export interface ExprStmt extends StmtBase<"ExprStmt"> {
     expr: Expr,
 }
 
 /// a block is a list of statements
-export interface BlockStmt extends StmtBase<"BlockStmt">{
+export interface BlockStmt extends StmtBase<"BlockStmt"> {
     stmts: Stmt[],
 }
 
@@ -41,27 +41,27 @@ export interface ExprBase<K extends string> {
 }
 
 /// numeric literal expression
-export interface NumericLiteral extends ExprBase<"NumericLiteral">{
+export interface NumericLiteral extends ExprBase<"NumericLiteral"> {
     value: number,
 }
 
 /// string literal expression
-export interface StringLiteral extends ExprBase<"StringLiteral">{
+export interface StringLiteral extends ExprBase<"StringLiteral"> {
     value: string,
 }
 
 /// boolean literal expression
-export interface BoolLiteral extends ExprBase<"BoolLiteral">{
+export interface BoolLiteral extends ExprBase<"BoolLiteral"> {
     value: boolean,
 }
 
 /// identifier expression
-export interface Identifier extends ExprBase<"Identifier">{
+export interface Identifier extends ExprBase<"Identifier"> {
     name: string,
 }
 
 /// binary expression
-export interface BinaryExpr extends ExprBase<"BinaryExpr">{
+export interface BinaryExpr extends ExprBase<"BinaryExpr"> {
     /// binary operator
     op: string,
     /// left operand

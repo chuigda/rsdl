@@ -1,3 +1,5 @@
+//! Rust 代码生成器
+
 use std::error::Error;
 
 use smallvec::SmallVec;
@@ -22,6 +24,7 @@ use crate::{
     min_resolv::ResolveContext
 };
 
+/// Rust 代码生成器
 pub struct RustGenerator();
 
 impl RustGenerator {

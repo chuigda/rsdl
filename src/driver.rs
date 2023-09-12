@@ -1,3 +1,5 @@
+//! `rsdl` 应用程序的实际入口点
+
 use std::collections::{HashSet, VecDeque};
 use std::env;
 use std::path::PathBuf;
@@ -40,6 +42,12 @@ struct Options {
     discriminant: String,
 }
 
+/// 启动 RSDL 编译流程
+/// 
+/// # 参数
+/// - `prebuilt_stdlib` - 预编译的标准库，在编译输入文件之前加载
+/// - `build_info` - 额外的构建信息
+/// - `generators` - 代码生成器工厂列表
 pub fn application_start(
     prebuilt_stdlib: &str,
     build_info: Option<&str>,
@@ -50,7 +58,6 @@ pub fn application_start(
     };
 
     tracing_subscriber::fmt::init();
-
 
     let lang_idents = generators
         .iter()
@@ -199,4 +206,8 @@ pub fn application_start(
     }
 }
 
+/// `rsdl` crate 自带的，供参考的标准库
+/// 
+/// 该标准库包含了一些常用的类型定义，以及一些常用的函数。可以支持 `rsdl` crate 自带的代码生成器。
+/// 如果下游希望实现新的代码生成器，往往需要编写一个新的标准库。
 pub const REFERENTIAL_STDLIB: &'static str = include_str!("stdlib.rsdl");

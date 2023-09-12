@@ -1,12 +1,23 @@
+//! 定义了 `rsdl` 代码生成器工作的上下文
+
 use std::collections::HashMap;
 
 use tracing::error;
 
 use crate::parser::hir::{check_inline, RSDLType, TypeDef, TypeDefInner, AttrItem};
 
+/// `rsdl` 代码生成器工作的上下文
 pub struct ResolveContext {
+    /// 全局注解项
     pub global_attr: Vec<AttrItem>,
+    /// 命令行参数定义的 `discriminant` 名称
     pub discriminant: String,
+    /// 已知的类型
+    /// 
+    /// 键是类型名称，值是一个三元组，分别是：
+    /// - 类型定义所在的文件
+    /// - 类型定义的类型
+    /// - 类型定义是否是内联的
     pub known_types: HashMap<String, (String, Option<RSDLType>, bool)>
 }
 

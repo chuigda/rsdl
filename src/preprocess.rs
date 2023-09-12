@@ -1,11 +1,17 @@
+//! `rsdl` 的预处理器模块
+
 use tracing::warn;
 
+/// 对单个文件预处理的结果
 #[derive(Debug, Clone)]
 pub struct PreprocessResult {
+    /// 输出代码，`#include` 预处理指令和注释已被移除
     pub output_src: String,
+    /// 该文件通过 `#include` 包含的其他文件
     pub includes: Vec<String>
 }
 
+/// 对单个文件进行预处理
 pub fn preprocess(file_name: &str, src: &str) -> PreprocessResult {
     let mut output_src = String::new();
     let mut includes = Vec::new();

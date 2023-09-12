@@ -1,3 +1,5 @@
+//! 基于 `interface` 的 TypeScript 代码生成器
+
 use std::error::Error;
 
 use crate::{
@@ -19,6 +21,7 @@ use crate::{
     min_resolv::ResolveContext
 };
 
+/// 基于 `interface` 的 TypeScript 代码生成器
 pub struct TSInterfaceGenerator();
 
 impl TSInterfaceGenerator {

@@ -7,6 +7,9 @@ use tracing::error;
 use crate::parser::hir::{check_inline, RSDLType, TypeDef, TypeDefInner, AttrItem};
 
 /// `rsdl` 代码生成器工作的上下文
+///
+/// # 参见
+/// - [`crate::codegen::CodeGenerator`]
 pub struct ResolveContext {
     /// 全局注解项
     pub global_attr: Vec<AttrItem>,
@@ -22,7 +25,7 @@ pub struct ResolveContext {
 }
 
 impl ResolveContext {
-    pub fn new(global_attr: Vec<AttrItem>, discriminant: impl ToString) -> Self {
+    pub(crate) fn new(global_attr: Vec<AttrItem>, discriminant: impl ToString) -> Self {
         Self {
             global_attr,
             discriminant: discriminant.to_string(),
@@ -30,7 +33,7 @@ impl ResolveContext {
         }
     }
 
-    pub fn min_resolv(&mut self, tyde: &TypeDef) -> Result<(), ()> {
+    pub(crate) fn min_resolv(&mut self, tyde: &TypeDef) -> Result<(), ()> {
         match &tyde.inner {
             TypeDefInner::AliasType(name, ty) => {
                 if let Some((exist_in_file, _, _)) = self.known_types.get(name) {
@@ -109,7 +112,7 @@ impl ResolveContext {
         Ok(())
     }
 
-    pub fn min_resolv_chk(&self, tyde: &TypeDef) -> Result<(), ()> {
+    pub(crate) fn min_resolv_chk(&self, tyde: &TypeDef) -> Result<(), ()> {
         match &tyde.inner {
             TypeDefInner::AliasType(name, ty) => if let Err(ident) = self.chktype(ty) {
                 error!(

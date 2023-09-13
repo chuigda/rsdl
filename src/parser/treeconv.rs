@@ -17,6 +17,8 @@ use crate::parser::pest_parser::Rule;
 
 /// 将 Pest AST 转换为 RSDL HIR
 ///
+/// 一般而言，下游不应该直接使用此函数。请参见 [`crate::driver::application_start`]
+///
 /// # 参数
 /// - `file_name` - 文件名
 /// - `tree` - Pest AST

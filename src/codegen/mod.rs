@@ -20,46 +20,46 @@ use crate::parser::hir::{
 };
 
 /// 用于输出生成代码的文档
-/// 
+///
 /// 一个文档中可以包含多个 `DocItem`，包括：
 /// - `DocItem::Text`：文本
 /// - `DocItem::TextLiteral`：文本字面量，用于输出固定的文本
 /// - `DocItem::EmptyLine`：空行
 /// - `DocItem::DocBlock`：子文档块
-/// 
+///
 /// 文档可以嵌套，并且缩进会被正确处理
-/// 
+///
 /// # 示例
-/// 
+///
 /// ```rust,no_run
 /// use rsdl::codegen::Doc;
-/// 
+///
 /// let mut doc = Doc::new(0);
 /// doc.push_str("Hello, world!");
-/// 
+///
 /// let mut sub_doc = Doc::new(4);
 /// sub_doc.push_str("Zdravstvuyte, mir");
 /// sub_doc.push_str("Hola Mundo");
-/// 
+///
 /// let mut sub_doc2 = Doc::new(4);
 /// sub_doc2.push_str("Bonjour le monde");
 /// sub_doc2.push_empty_line();
 /// let user_name = some_user_input();
 /// sub_doc2.push_string(format!("Hello, {}", user_name));
-/// 
+///
 /// sub_doc.push_doc(Box::new(sub_doc2));
 /// doc.push_doc(Box::new(sub_doc));
 /// println!("{}", doc.to_string());
 /// ```
-/// 
+///
 /// 输出：
-/// 
+///
 /// ```text
 /// Hello, world!
 ///     Zdravstvuyte, mir
 ///     Hola Mundo
 ///         Bonjour le monde
-/// 
+///
 ///         Hello, (user input)
 /// ```
 #[derive(Debug)]
@@ -78,7 +78,7 @@ impl Doc {
     }
 
     /// 向文档中添加一个 `DocItem`
-    /// 
+    ///
     /// 不建议直接使用此方法，而是使用 `push_str`、`push_string`、`push_empty_line`、`push_doc`
     pub fn push(&mut self, item: DocItem) -> &mut Self {
         self.items.push(item);
@@ -92,7 +92,7 @@ impl Doc {
     }
 
     /// 向文档中添加一行文本（字面量）
-    /// 
+    ///
     /// 注意：不要一次性用 `push_str` 添加多行文本，这种情况下应该多次调用 `push_str`
     pub fn push_str(&mut self, s: &'static str) -> &mut Self {
         self.items.push(DocItem::TextLiteral(s));
@@ -100,7 +100,7 @@ impl Doc {
     }
 
     /// 向文档中添加一行文本
-    /// 
+    ///
     /// 注意：不要一次性用 `push_string` 添加多行文本，这种情况下应该多次调用 `push_string`
     pub fn push_string(&mut self, s: String) -> &mut Self {
         self.items.push(DocItem::Text(s));
@@ -108,7 +108,7 @@ impl Doc {
     }
 
     /// 向文档中添加一个空行
-    /// 
+    ///
     /// 相比于 `push_str("")` 而言，`push_empty_line` 不受缩进影响
     pub fn push_empty_line(&mut self) -> &mut Self {
         self.items.push(DocItem::EmptyLine);
@@ -162,10 +162,10 @@ pub enum DocItem {
 }
 
 /// 代码生成器 `trait`
-/// 
+///
 /// 下游代码可以实现此 `trait` 来编写自己的代码生成器。代码生成器会按照如下顺序，
 /// 调用 `CodeGenerator` 中的方法：
-/// 
+///
 /// - `pre_visit`
 /// - `visit_namespace_begin`
 /// - `visit_all_typedefs`
@@ -177,7 +177,7 @@ pub enum DocItem {
 /// - `visit_namespace_end`
 pub trait CodeGenerator {
     /// 报告代码生成器的用户可见名称
-    /// 
+    ///
     /// 这个名称会在命令行以及日志中显示
     fn generator_name(&self) -> &'static str;
 
@@ -185,16 +185,16 @@ pub trait CodeGenerator {
     fn lang_ident(&self) -> &'static str;
 
     /// 报告语言中的保留标识符
-    /// 
+    ///
     /// 在执行代码生成之前，`rsdl` 编译器会检查即将生成的代码中是否包含保留标识符，
     /// 并且提前给出错误信息
     fn reserved_idents(&self) -> &[&'static str];
 
     /// 进入名称空间时代码生成器的行为
-    /// 
+    ///
     /// 当用户通过命令行指定了 `--namespace` 参数时，`rsdl` 编译器会在开始生成代码时
     /// 调用此方法
-    /// 
+    ///
     /// 不支持名称空间的代码生成器应该返回 `Err`（推荐的行为），或者也可以忽略此方法
     fn visit_namespace_begin(
         &mut self,
@@ -203,10 +203,10 @@ pub trait CodeGenerator {
     ) -> Result<(), Box<dyn Error>>;
 
     /// 离开名称空间时代码生成器的行为
-    /// 
+    ///
     /// 当用户通过命令行指定了 `--namespace` 参数时，`rsdl` 编译器会在结束生成代码时
     /// 调用此方法
-    /// 
+    ///
     /// 不支持名称空间的代码生成器应该调用 `unreachable!()`，或者也可以忽略此方法
     fn visit_namespace_end(
         &mut self,
@@ -234,7 +234,7 @@ pub trait CodeGenerator {
     ) -> Result<(), Box<dyn Error>>;
 
     /// 生成和类型时代码生成器的行为
-    /// 
+    ///
     /// 注意：`rsdl` 在调用 `visit_sum_type` 之后，会立即对和类型所有的构造器调用
     /// `visit_sum_type_ctor`，对所有的标量变体调用 `visit_sum_type_scalar_variant`。
     /// 你可以选择在 `visit_sum_type_ctor` 和 `visit_sum_type_scalar_variant`
@@ -279,7 +279,7 @@ pub trait CodeGenerator {
     }
 
     /// 在开始生成代码时的行为
-    /// 
+    ///
     /// 用户可以通过实现此方法来向生成的代码中添加一些头部信息，
     /// 例如版权信息、导入语句等
     fn pre_visit(
@@ -292,8 +292,8 @@ pub trait CodeGenerator {
 }
 
 /// 生成代码
-/// 
-/// 一般而言，下游不应该直接使用此函数。请参见 `rsdl::driver::application_start`
+///
+/// 一般而言，下游不应该直接使用此函数。请参见 [`crate::driver::application_start`]
 pub fn codegen(
     namespace: Option<&str>,
     tyde: &[TypeDef],
@@ -505,12 +505,12 @@ fn check_reserved_idents(
 /// 代码生成器工厂，用于创建代码生成器
 pub trait CodeGeneratorFactory {
     /// 报告代码生成器的用户可见名称
-    /// 
+    ///
     /// 这个名称会在命令行以及日志中显示
     fn generator_name(&self) -> &'static str;
 
     /// 报告代码生成器的语言标识符
-    /// 
+    ///
     /// 语言标识符用于在命令行参数中指定代码生成器
     fn lang_ident(&self) -> &'static str;
 

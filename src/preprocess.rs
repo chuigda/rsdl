@@ -12,6 +12,8 @@ pub struct PreprocessResult {
 }
 
 /// 对单个文件进行预处理
+///
+/// 一般而言，下游不应该直接使用此函数。请参见 [`crate::driver::application_start`]
 pub fn preprocess(file_name: &str, src: &str) -> PreprocessResult {
     let mut output_src = String::new();
     let mut includes = Vec::new();

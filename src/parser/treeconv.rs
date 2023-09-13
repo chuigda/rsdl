@@ -1,3 +1,5 @@
+//! AST 转换器，将 Pest AST 转换为 RSDL HIR
+
 use std::collections::HashMap;
 use pest::iterators::{Pair, Pairs};
 use smallvec::SmallVec;
@@ -13,6 +15,17 @@ use crate::parser::hir::{
 use crate::parser::pest_parser::Rule;
 
 
+/// 将 Pest AST 转换为 RSDL HIR
+///
+/// # 参数
+/// - `file_name` - 文件名
+/// - `tree` - Pest AST
+/// - `global_attr` - （输出参数）全局属性列表
+/// - `defs` - （输出参数）类型定义列表
+///
+/// # 参见
+/// - [`crate::parser::pest_parser::PestRSDLParser`] - Pest 解析器
+/// - [`crate::parser::hir`] - RSDL HIR
 pub fn treeconv(file_name: &str, mut tree: Pairs<Rule>, global_attr: &mut Vec<AttrItem>, defs: &mut Vec<TypeDef>) {
     let rsdl_program = tree
         .next()
@@ -206,7 +219,7 @@ fn fldconv(fld: Pair<Rule>) -> (SmallVec<[AttrItem; 2]>, bool, RSDLType, String)
 fn convrsdltype(rsdl_type: Pair<Rule>) -> RSDLType {
     let mut cloned_iter = rsdl_type.clone().into_inner();
     let inner = cloned_iter.next().unwrap();
-    
+
     match inner.as_rule() {
         Rule::identifier => RSDLType::Identifier(rsdl_type.as_str().to_string()),
         Rule::list_type => convrsdltype_list(inner),

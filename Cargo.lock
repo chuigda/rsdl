@@ -249,7 +249,7 @@ dependencies = [
 
 [[package]]
 name = "rsdl"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "pest",
  "pest_derive",

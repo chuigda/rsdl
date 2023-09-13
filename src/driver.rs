@@ -43,10 +43,19 @@ struct Options {
 }
 
 /// 启动 RSDL 编译流程
-/// 
+///
+/// 这个函数会根据 `RUST_LOG` 设置日志级别、初始化日志系统、
+/// 加载预编译的标准库、解析命令行参数、加载代码生成器，
+/// 解析用户输入，调用代码生成器生成代码，最后将生成的代码写入输出文件
+///
+/// 一般而言，下游程序应该直接在 `main` 函数中调用这个函数，并在
+/// `prebuilt_stdlib` 参数中传入 [`crate::driver::REFERENTIAL_STDLIB`]
+/// 或者自定义的标准库，`build_info` 参数中传入额外的构建信息，
+/// `generators` 参数中传入所有要使用的代码生成器。
+///
 /// # 参数
 /// - `prebuilt_stdlib` - 预编译的标准库，在编译输入文件之前加载
-/// - `build_info` - 额外的构建信息
+/// - `build_info` - 额外的构建信息，例如版权等信息，会在启动时打印
 /// - `generators` - 代码生成器工厂列表
 pub fn application_start(
     prebuilt_stdlib: &str,
@@ -207,7 +216,7 @@ pub fn application_start(
 }
 
 /// `rsdl` crate 自带的，供参考的标准库
-/// 
+///
 /// 该标准库包含了一些常用的类型定义，以及一些常用的函数。可以支持 `rsdl` crate 自带的代码生成器。
 /// 如果下游希望实现新的代码生成器，往往需要编写一个新的标准库。
 pub const REFERENTIAL_STDLIB: &'static str = include_str!("stdlib.rsdl");

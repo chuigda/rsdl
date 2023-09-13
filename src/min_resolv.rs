@@ -13,7 +13,7 @@ pub struct ResolveContext {
     /// 命令行参数定义的 `discriminant` 名称
     pub discriminant: String,
     /// 已知的类型
-    /// 
+    ///
     /// 键是类型名称，值是一个三元组，分别是：
     /// - 类型定义所在的文件
     /// - 类型定义的类型

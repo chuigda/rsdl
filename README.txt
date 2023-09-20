@@ -41,3 +41,8 @@ Rust 后端支持的注解
     如果对 SUM 类型使用，每个 enum variant 对应的 struct 类型都会被派生指定的 traits
   - [rust_attr(attributes)]
     为类型或者字段添加指定的 Rust attribute，attribute 语法和 Rust 总体上一致
+  - [rust_serde]
+    为类型派生 Serialize 和 Deserialize；如果应用于 SUM 类型，还会添加
+    #[serde(tag = discriminant)]
+  - [rust_rkyv]
+    为类型派生 Archive

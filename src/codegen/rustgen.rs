@@ -65,8 +65,8 @@ impl RustGenerator {
         attr_list: &[AttrItem],
         output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
+        let mut derived_names: SmallVec<[&str; 4]> = SmallVec::new();
         for attr in attr_list {
-            let mut derived_names: SmallVec<[&str; 2]> = SmallVec::new();
             if let AttrItem::CallAlike(fn_alike, param_alike) = attr {
                 if fn_alike == "rust_derive" {
                     for param in param_alike {
@@ -76,12 +76,24 @@ impl RustGenerator {
                             return Err("derive 属性的参数必须是标识符".into());
                         }
                     }
-
-                    if !derived_names.is_empty() {
-                        output.push_string(format!("#[derive({})]", derived_names.join(", ")));
-                    }
                 }
             }
+        }
+
+        if self.check_rust_serde(attr_list) {
+            derived_names.push("Serialize");
+            derived_names.push("Deserialize");
+        }
+
+        if self.check_rust_rkyv(attr_list) {
+            derived_names.push("Archive");
+        }
+
+        derived_names.sort();
+        derived_names.dedup();
+
+        if !derived_names.is_empty() {
+            output.push_string(format!("#[derive({})]", derived_names.join(", ")));
         }
 
         Ok(())
@@ -91,11 +103,21 @@ impl RustGenerator {
         check_ident_attr(attr_list, "rust_skip")
     }
 
+    fn check_rust_serde(&self, attr_list: &[AttrItem]) -> bool {
+        check_ident_attr(attr_list, "rust_serde")
+    }
+
+    fn check_rust_rkyv(&self, attr_list: &[AttrItem]) -> bool {
+        check_ident_attr(attr_list, "rust_rkyv")
+    }
+
     fn gen_rust_attr(
         &self,
         attr_list: &[AttrItem],
         rust_attr_name: &str,
-        output: &mut Doc
+        output: &mut Doc,
+        ctx: &ResolveContext,
+        is_enum_context: bool
     ) -> Result<(), Box<dyn Error>> {
         for attr in attr_list {
             match attr {
@@ -111,6 +133,10 @@ impl RustGenerator {
                 },
                 _ => {}
             }
+        }
+
+        if is_enum_context && self.check_rust_serde(attr_list) {
+            output.push_string(format!("#[serde(tag = \"{}\")]", ctx.discriminant));
         }
 
         Ok(())
@@ -180,7 +206,7 @@ impl RustGenerator {
         if let Some(sum_type_attr) = sum_type_attr {
             self.gen_rust_derive(sum_type_attr, output)?;
         }
-        self.gen_rust_attr(attr, rust_attr_name, output)?;
+        self.gen_rust_attr(attr, rust_attr_name, output, ctx, false)?;
         let private = check_private(attr);
 
         output.push_string(format!(
@@ -193,7 +219,7 @@ impl RustGenerator {
 
         for (attr, optional, field_type, field_name) in &type_ctor.fields {
             self.gen_doc(attr, "doc", &mut struct_fields)?;
-            self.gen_rust_attr(attr, "rust_attr", &mut struct_fields)?;
+            self.gen_rust_attr(attr, "rust_attr", &mut struct_fields, ctx, false)?;
             let field_private = check_private(attr);
             let field_boxed = check_boxed(attr);
 
@@ -326,7 +352,7 @@ impl CodeGenerator for RustGenerator {
         }
 
         self.gen_doc(attr, "doc", output)?;
-        self.gen_rust_attr(attr, "rust_attr", output)?;
+        self.gen_rust_attr(attr, "rust_attr", output, ctx, false)?;
         let private = check_private(attr);
 
         output.push_string(format!(
@@ -394,7 +420,7 @@ impl CodeGenerator for RustGenerator {
 
         self.gen_doc(attr, "doc", output)?;
         self.gen_rust_derive(attr, output)?;
-        self.gen_rust_attr(attr, "rust_attr", output)?;
+        self.gen_rust_attr(attr, "rust_attr", output, ctx, true)?;
         let private = check_private(attr);
 
         output.push_string(format!(
@@ -407,7 +433,7 @@ impl CodeGenerator for RustGenerator {
 
         for (variant_attr, variant) in &sum_type.scalar_variants {
             self.gen_doc(variant_attr, "doc", &mut enum_variants)?;
-            self.gen_rust_attr(variant_attr, "rust_attr", &mut enum_variants)?;
+            self.gen_rust_attr(variant_attr, "rust_attr", &mut enum_variants, ctx, false)?;
 
             enum_variants.push_string(format!(
                 "{},",
@@ -417,7 +443,7 @@ impl CodeGenerator for RustGenerator {
 
         for (ctor_attr, ctor) in &sum_type.ctors {
             self.gen_doc(ctor_attr, "doc", &mut enum_variants)?;
-            self.gen_rust_attr(ctor_attr, "rust_attr", &mut enum_variants)?;
+            self.gen_rust_attr(ctor_attr, "rust_attr", &mut enum_variants, ctx, false)?;
 
             if check_boxed(&ctor_attr) {
                 enum_variants.push_string(format!(

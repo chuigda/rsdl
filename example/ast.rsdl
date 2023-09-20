@@ -1,9 +1,10 @@
 [[global_attr]]
 
-[rust_derive(Copy, Clone, Debug, Serialize, Deserialize)]
-[rust_attr(serde(tag = "$kind"))]
+[rust_derive(Copy, Clone, Debug)]
+[rust_serde]
+[rust_rkyv]
 [doc = "A program is a list of statements"]
-Stmt : [doc = "if-then-else statement"] 
+Stmt : [doc = "if-then-else statement"]
        [boxed]
        IfStmt(
          [doc = "if condition"]
@@ -20,8 +21,9 @@ Stmt : [doc = "if-then-else statement"]
        [boxed]
        BlockStmt(stmts: list<Stmt>)
 
-[rust_derive(Copy, Clone, Debug, Serialize, Deserialize)]
-[rust_attr(serde(tag = "$kind"))]
+[rust_derive(Copy, Clone, Debug)]
+[rust_serde]
+[rust_rkyv]
 [doc = "An expression is a literal, an identifier, or a binary expression"]
 [doc = ""]
 [doc = "All I want is a room somewhere,"]
@@ -46,7 +48,7 @@ Expr : [doc = "numeric literal expression"]
          [doc = "right operand"]
          right: Expr
        )
-     -- the following line won't compile with Rust target, because `fn` is 
+     -- the following line won't compile with Rust target, because `fn` is
      -- a keyword in Rust
      -- | [doc = "function call expression"]
      --   [boxed]

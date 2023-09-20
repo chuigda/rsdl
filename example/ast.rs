@@ -1,5 +1,5 @@
 /// A program is a list of statements
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "$kind")]
 pub enum Stmt {
     /// if-then-else statement
@@ -10,7 +10,7 @@ pub enum Stmt {
     BlockStmt(Box<BlockStmt>),
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct IfStmt {
     /// if condition
     pub cond: Expr,
@@ -20,12 +20,12 @@ pub struct IfStmt {
     pub otherwise: Option<Stmt>,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct ExprStmt {
     pub expr: Expr,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct BlockStmt {
     pub stmts: Vec<Stmt>,
 }
@@ -36,7 +36,7 @@ pub struct BlockStmt {
 /// Far away from the cold night air,
 /// With one enormous chair,
 /// Aow, wouldn't it be loverly?
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "$kind")]
 pub enum Expr {
     /// numeric literal expression
@@ -51,27 +51,27 @@ pub enum Expr {
     BinaryExpr(Box<BinaryExpr>),
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct NumericLiteral {
     pub value: i64,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct StringLiteral {
     pub value: String,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct BoolLiteral {
     pub value: bool,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Identifier {
     pub name: String,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Archive, Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct BinaryExpr {
     /// binary operator
     pub op: String,

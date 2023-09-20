@@ -8,7 +8,7 @@ use smallvec::SmallVec;
 #[derive(Debug, Clone)]
 pub enum AttrItem {
     /// 标识符
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// [inline]
@@ -16,7 +16,7 @@ pub enum AttrItem {
     Identifier(String),
 
     /// 字符串字面量
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// ["这是一个字符串字面量"]
@@ -24,7 +24,7 @@ pub enum AttrItem {
     String(String),
 
     /// “赋值”形式的注解
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// [doc = "左边是赋值目标，右边是赋值的值，可以是任意的 AttrItem"]
@@ -32,12 +32,12 @@ pub enum AttrItem {
     Assignment(String, Box<AttrItem>),
 
     /// “调用”形式的注解
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// [doc("这是一个调用形式的注解")]
     /// ```
-    /// 
+    ///
     /// ```rsdl
     /// [doc(
     ///     "这是一个调用形式的注解",
@@ -55,7 +55,7 @@ pub enum RSDLType {
     /// 标识符
     Identifier(String),
     /// `native` 类型
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// native(
@@ -66,18 +66,18 @@ pub enum RSDLType {
     /// )
     Native(HashMap<String, String>),
     /// 列表（数组）类型
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// list<int>
     /// ```
-    /// 
+    ///
     /// ```rsdl
     /// [int] -- 与上面的写法等价
     /// ```
     List(Box<RSDLType>),
     /// 记录类型
-    /// 
+    ///
     /// # 示例
     /// ```rsdl
     /// record<str, SomeType>
@@ -86,9 +86,9 @@ pub enum RSDLType {
 }
 
 /// 一个 RSDL 类型构造器
-/// 
+///
 /// 简单类型只有一个构造器，而和类型可以有零个或多个构造器
-/// 
+///
 /// # 示例
 /// ```rsdl
 /// SimpleType(
@@ -103,7 +103,7 @@ pub struct TypeConstructor {
     pub name: String,
 
     /// 构造器的字段列表
-    /// 
+    ///
     /// 元组中的四个元素分别是：
     /// - 字段的注解
     /// - 字段是否可空
@@ -113,11 +113,11 @@ pub struct TypeConstructor {
 }
 
 /// 一个 RSDL 和类型
-/// 
+///
 /// 一个和类型中有多个构造器和多个标量变体
-/// 
+///
 /// # 示例
-/// 
+///
 /// ```rsdl
 /// DateTime : POSIXTimestamp(timestamp: int)
 ///          | ISO8601String(iso8601: str)
@@ -129,7 +129,7 @@ pub struct SumType {
     pub name: String,
 
     /// 标量变体
-    /// 
+    ///
     /// 元组中的两个元素分别是：
     /// - 变体的注解
     /// - 变体的名称
@@ -184,14 +184,14 @@ pub fn check_boxed(attr_list: &[AttrItem]) -> bool {
 }
 
 /// 提取一个注解列表中的所有文档字符串
-/// 
+///
 /// # 示例
 /// ```rsdl
 /// [doc("这是一个文档字符串")]
 /// [doc = "这是另一个文档字符串
 /// 这个文档字符串有两行"]
 /// ```
-/// 
+///
 /// 提取出来的文档字符串是：
 /// ```rust,no_run
 /// vec![

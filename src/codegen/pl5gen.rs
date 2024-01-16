@@ -180,13 +180,17 @@ impl CodeGenerator for PL5Generator {
 
     fn visit_type_alias(
         &mut self,
-        ctx: &ResolveContext,
+        _ctx: &ResolveContext,
         attr: &[AttrItem],
-        alias_name: &str,
-        target_type: &RSDLType,
-        output: &mut Doc
+        _alias_name: &str,
+        _target_type: &RSDLType,
+        _output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
-        todo!()
+        if check_inline(attr) {
+            return Ok(());
+        }
+
+        Err("PL5 不支持类型别名".into())
     }
 
     fn visit_simple_type(
@@ -196,7 +200,15 @@ impl CodeGenerator for PL5Generator {
         type_ctor: &TypeConstructor,
         output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
-        todo!()
+        self.imp_visit_simple_type(
+            ctx,
+            attr,
+            None,
+            type_ctor,
+            output,
+            "doc",
+            "rust"
+        )
     }
 
     fn visit_sum_type(
@@ -229,5 +241,21 @@ impl CodeGenerator for PL5Generator {
         output: &mut Doc
     ) -> Result<(), Box<dyn Error>> {
         todo!()
+    }
+}
+
+pub struct PL5GeneratorFactory();
+
+impl CodeGeneratorFactory for PL5GeneratorFactory {
+    fn generator_name(&self) -> &'static str {
+        PL5Generator().generator_name()
+    }
+
+    fn lang_ident(&self) -> &'static str {
+        PL5Generator().lang_ident()
+    }
+
+    fn create(&self) -> Box<dyn CodeGenerator> {
+        Box::new(PL5Generator())
     }
 }

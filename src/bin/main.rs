@@ -1,3 +1,4 @@
+use rsdl::codegen::pl5gen::PL5GeneratorFactory;
 use rsdl::codegen::rustgen::RustGeneratorFactory;
 use rsdl::codegen::tsgen::TSInterfaceGeneratorFactory;
 use rsdl::driver::REFERENTIAL_STDLIB;
@@ -8,7 +9,8 @@ fn main() {
         None,
         &[
             &RustGeneratorFactory(),
-            &TSInterfaceGeneratorFactory()
+            &TSInterfaceGeneratorFactory(),
+            &PL5GeneratorFactory()
         ]
     )
 }

@@ -1,0 +1,6 @@
+Something(
+    a: int,
+    b: str,
+    c: bool,
+    d: [int]
+)

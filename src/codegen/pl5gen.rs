@@ -80,55 +80,61 @@ impl PL5Generator {
         &mut self,
         ctx: &ResolveContext,
         attr: &[AttrItem],
-        sum_type_attr: Option<&[AttrItem]>,
+        _sum_type_attr: Option<&[AttrItem]>,
         type_ctor: &TypeConstructor,
         output: &mut Doc,
 
-        doc_attr_name: &str,
-        rust_attr_name: &str
+        doc_attr_name: &str
     ) -> Result<(), Box<dyn Error>> {
-        let ctor_name_dashed = self.underscore2dash(&type_ctor.name);
+        let ctor_name_lisp = self.lispify(&type_ctor.name);
 
         self.gen_doc(attr, doc_attr_name, output)?;
 
         for (attr, _, _, name) in &type_ctor.fields {
-            output.push_string(format!("- {}", self.underscore2dash(name)));
             let mut field_doc = Box::new(Doc::new(4));
             self.gen_doc(attr, "doc", &mut field_doc)?;
             if !field_doc.items.is_empty() {
+                output.push_string(format!("- {}", self.lispify(name)));
                 output.push_doc(field_doc);
             }
         }
 
         let mut maker_args = String::new();
         for (_, _, _, name) in &type_ctor.fields {
-            maker_args.push_str(&self.underscore2dash(name));
+            maker_args.push_str(&self.lispify(name));
             maker_args.push(' ');
         }
-        output.push_string(format!("(define (make-{} {})", ctor_name_dashed, maker_args));
+        if !maker_args.is_empty() {
+            maker_args.pop();
+        }
+
+        output.push_string(format!("(define (make-{} {})", ctor_name_lisp, maker_args));
         let mut maker_body = Box::new(Doc::new(4));
 
         for (_, optional, ty, name) in &type_ctor.fields {
             let type_name = self.type_to_string(ctx, ty).ok_or_else(|| {
                 format!("无法将类型 {:?} 转换为 PL5 类型", ty)
             })?;
+            if type_name.is_empty() {
+                continue;
+            }
 
-            let name_dashed = self.underscore2dash(name);
+            let name_lisp = self.lispify(name);
             if *optional {
                 maker_body.push_string(format!(
-                    "(assert (or (null? {name_dashed}) ({type_name}? {name_dashed})) \"字段 {name_dashed} 的类型必须是 {type_name} 或者 null\")",
+                    "(assert (or (null? {name_lisp}) ({type_name}? {name_lisp})) \"字段 {name_lisp} 的类型必须是 {type_name} 或者 null\")",
                 ));
             } else {
                 maker_body.push_string(format!(
-                    "(assert ({type_name}? {name_dashed}) \"字段 {name_dashed} 的类型必须是 {type_name}\")",
+                    "(assert ({type_name}? {name_lisp}) \"字段 {name_lisp} 的类型必须是 {type_name}\")",
                 ));
             }
         }
 
-        maker_body.push_string(format!("(struct 'k '{ctor_name_dashed}"));
+        maker_body.push_string(format!("(struct 'k '{ctor_name_lisp}"));
         let mut struct_fields = Box::new(Doc::new(8));
         for (_, _, _, name) in &type_ctor.fields {
-            let name_dashed = self.underscore2dash(name);
+            let name_dashed = self.lispify(name);
             struct_fields.push_string(format!(
                 "'{name_dashed} {name_dashed}",
             ));
@@ -141,8 +147,8 @@ impl PL5Generator {
         Ok(())
     }
 
-    fn underscore2dash(&self, s: &str) -> String {
-        s.replace('_', "-")
+    fn lispify(&self, s: &str) -> String {
+        s.to_lowercase().replace('_', "-")
     }
 }
 
@@ -206,8 +212,7 @@ impl CodeGenerator for PL5Generator {
             None,
             type_ctor,
             output,
-            "doc",
-            "rust"
+            "doc"
         )
     }
 

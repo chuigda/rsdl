@@ -1,13 +1,8 @@
-- a
-- b
-- c
-- d
-(define (make-Something a b c d )
+(define (make-something a b c d)
     (assert (int? a) "字段 a 的类型必须是 int")
     (assert (string? b) "字段 b 的类型必须是 string")
-    (assert (? c) "字段 c 的类型必须是 ")
     (assert (list? d) "字段 d 的类型必须是 list")
-    (struct 'k 'Something
+    (struct 'k 'something
             'a a
             'b b
             'c c

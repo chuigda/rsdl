@@ -4,8 +4,12 @@ use std::collections::HashMap;
 use std::error::Error;
 use smallvec::SmallVec;
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 /// 一个注解项
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AttrItem {
     /// 标识符
     ///
@@ -51,6 +55,7 @@ pub enum AttrItem {
 
 /// 一个 RSDL 类型
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum RSDLType {
     /// 标识符
     Identifier(String),
@@ -98,6 +103,7 @@ pub enum RSDLType {
 ///     d: list<SomeType>
 /// )
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct TypeConstructor {
     /// 构造器的名称
     pub name: String,
@@ -124,6 +130,7 @@ pub struct TypeConstructor {
 ///          | RFC3339Elaborated(year: int, month: int, day: int, hour: int, minute: int, second: float, timezone: int)
 ///          | UnknownDateTime
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SumType {
     /// 和类型的名称
     pub name: String,
@@ -141,6 +148,7 @@ pub struct SumType {
 
 /// 一个 RSDL 类型定义的“内容”
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum TypeDefInner {
     /// 类型别名
     AliasType(String, RSDLType),
@@ -152,6 +160,7 @@ pub enum TypeDefInner {
 
 /// 一个 RSDL 类型定义
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct TypeDef {
     /// 类型定义所在的文件
     pub file: String,

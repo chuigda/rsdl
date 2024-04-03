@@ -2,7 +2,7 @@
 
 pub mod rustgen;
 pub mod tsgen;
-pub mod pl5gen;
+// pub mod pl5gen;
 
 use std::collections::HashSet;
 use std::error::Error;
